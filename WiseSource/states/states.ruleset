@@ -1,0 +1,51 @@
+
+#MAP
+stateToken-s
+	[[tT]ool( )*[tT]ips?] as TOOL_TIP
+	[\\n] as NEWTLINE
+	"\t" as TAB
+	";" as SEMICOLON
+	"Enter" as ENTER
+	"Exit" as EXIT
+	"states" as STATES
+	"->" as TRANSITION_ARROW
+	"*" as STATE_NAME
+	[[ \\t]+] as SPACE
+	[[^\\s]+] as NON_SPACE
+	[[^\\s\\[\\]]+] as NON_SPACE_OR_SQUARE
+	"n" as NNN
+
+stateBrace-s are Braced
+	[,.] as STATES_FILE with WILD as states_file_name
+	[{,}] as TRANSITION_ELEMENTS with ( NEWLINE+ | entry_element)*
+	[[,]] as TRANSITION_INDEX with (INTEGER NAME? | NAME) as transitionIndex
+	[/,/] as SPECIAL_DESCRIPTOR with special_descriptor
+	[,:] as CHOICE_NAME with ((SPACE|SPECIAL_DESCRIPTOR|NON_SPACE_OR_SQUARE) as descriptor* ) as choiceName
+special_descriptor
+	NNN as newline
+	statement
+
+stateAltBrace-s are CharitableBraced
+	[,\n] as TOOL_TIP_LINE with WILD as toolTipLine
+	[,\n] as DESCRIPTION_LINE with ((SPACE|SPECIAL_DESCRIPTOR|NON_SPACE) as descriptor* ) as descriptionLine
+
+stateImport-s are Import
+	[><<\"states/\",states_file_name,\".states\">>\n] as IMPORT_STATES from (NEWLINE|COMMENTS|state_declaration)*; with STATES_FILE STATES
+
+
+state_declaration
+	STATE_NAME+ NAME as stateName STATE_NAME+ NEWLINE* ( TRANSITION_INDEX NEWTLINE* ( state_element NEWLINE* )* ) as subState*
+state_element is silent
+	( ( ENTER | EXIT ) NEWLINE* COLON NEWLINE* entry_element? NEWTLINE* ((TAB|SEMICOLON) entry_element NEWTLINE* )* SEMICOLON? ) as stateChange 
+	( (IF boolean_statement ( NEWLINE* COLON NEWTLINE* | NEWTLINE+ ) )? ( TAB DESCRIPTION_LINE NEWTLINE*)+ )  as stateDescription SEMICOLON?
+	( (IF boolean_statement ( NEWLINE* COLON NEWTLINE* | NEWTLINE+ ) )? NEWLINE* CHOICE_NAME NEWLINE* choice_element? NEWTLINE* ( (TAB|SEMICOLON) choice_element NEWTLINE*)* ) as stateChange SEMICOLON?
+entry_element
+	( TRANSITION_ARROW NAME as transitionStateName? TRANSITION_INDEX ) as transition+ TRANSITION_ELEMENTS?
+	PLUS type_name NAME as newVariable EQUALSIGN statement
+	PLUS           NAME as newVariable EQUALSIGN statement
+	NAME as variableName  ( DOT NAME as variableName )* EQUALSIGN statement
+	NAME as variableName  ( DOT NAME as variableName )* ( SLASH NAME as pluralizer ) ( PLUSEQUALS | MINUSEQUALS )  statement
+	BODY
+choice_element is silent
+	TOOL_TIP ( NEWTABTAB ( TOOL_TIP_LINE | NEWLINE+ )+ )+
+	entry_element

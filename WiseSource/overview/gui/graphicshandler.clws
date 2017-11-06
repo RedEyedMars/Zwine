@@ -1,0 +1,98 @@
+< Font : \java.\awt;
+class 'packageName'."gui" GraphicsHandler {
+  Graphics g = null;
+  int startX = 0;
+  int startY = 0;
+  ~int x = 0;
+  ~int y = 0;
+  int width = 0;
+  int height = 0;
+  ~List<Graphics\>Element> elements = new ArrayList<Graphics\>Element>();
+  ~int cHeight = 12;
+  ~int cWidth = 12;
+  ~boolean cropWhitespace = true;
+  GraphicsHandler *(Graphics iG, int iX, int iY, int iW, int iH){
+    g = iG;
+    startX = iX;
+    startY = iY;
+    x = startX;
+    y = startY;
+    width = iW;
+    height = iH;
+    elements.add(new Graphics->Element->Style(Color.white));
+  }
+  void text(String newString){
+    if cropWhiteSpace {
+      int firstNonSpace = 0;
+      while firstNonSpace < newString.length() {
+        if newString.charAt(firstNonSpace) != "' '" {
+          "break";
+        }
+        firstNonSpace \+= 1;
+      }
+      if firstNonSpace > 0 {
+        newString = newString.substring(firstNonSpace);
+      }
+    }
+    if newString.length() == 0 {
+      return void;
+    }
+    if x\+newString.length()*cWidth > startX\+width {
+      x = startX;
+      y \+= cHeight \+ 3;
+      cropWhiteSpace = true;
+    }
+    elements.add(new GraphicsHandler->Element->Text(newString,x,y));
+    x += newString.length()*cWidth;
+  }
+  void newline(){
+    x = startX;
+    y \+= cHeight \+ 3;
+    cropWhiteSpace = true;
+  }
+  void display(){
+    GraphicsHandler->Element->Style style = null;
+    for Graphics->Element element: elements {
+      style = element.display(g,style);
+    }
+  }
+  class Element // {
+    GraphicsHandler->Element->Style display(Graphics g, GraphicsHandler->Element->Style s){
+      return null;
+    }
+    class Style /GraphicsHandler->Element/ {
+      ~Color colour = null;
+      ~Font font = null;
+      Style *(Color newColour){
+        colour = newColour;
+      }
+      Style *(Font newFont){
+        font = newFont;
+      }
+      GraphicsHandler->Element->Style display(Graphics g, GraphicsHandler->Element->Style s){
+        if s != this {
+          if color != null {
+            g.setColor(colour);
+          }
+        }
+        return this;
+      }
+    }
+    class Text /GraphicsHandler->Element/ {
+      String text = null;
+      int x = 0;
+      int y = 0;
+      ~GraphicsHandler->Element->Style style = null
+      int length(){
+        return text.length();
+      }
+      GraphicsHandler->Element->Style display(Graphics g, GraphicsHandler->Element->Style s){
+        if style != null {
+          s = style.display(g,s);
+        }
+        g.drawString(text,x,y);
+        return s;
+      }
+    }
+  }
+}

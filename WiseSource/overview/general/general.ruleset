@@ -1,0 +1,123 @@
+#GENERAL
+
+generalToken-s
+	[[a-zA-Z_][a-zA-Z0-9_]*] as NAME
+	[[-]?\\d+\\Q.\\E\\d+] as FLOAT
+	[[-]?\\d+] as INTEGER
+	[.*] as WILD
+	[[xX]] as CROSS
+	[[<>][=]?] as ORDINAL
+	":" as COLON
+	";" as SEMICOLON
+	".." as DOTDOT
+	"->" as ACCESS
+	"=>" as STATIC_ACCESS
+	"<-" as CAST_ARROW
+	"." as DOT
+	"for" as FOR
+	"while" as WHILE
+	"if" as IF
+	"else" as ELSE
+	"=" as EQUALSIGN
+	"==" as EQUALS
+	"!=" as NOTEQUALS
+	"+=" as PLUSEQUALS
+	"-=" as MINUSEQUALS
+	"+" as PLUS
+	"-" as MINUS
+	"*" as MULTIPLY
+	"/" as DIVIDE
+	"&" as AND
+	"|" as OR
+	"!" as NOT
+	"%" as PERCENT
+	"\n" as NEWLINE
+	"\n\t" as NEWTAB
+	"\n\t\t" as NEWTABTAB
+	"\n\t\t\t" as NEWTABTABTAB
+	"," as COMMA
+	"-" as DASH
+	"true" as TRUE
+	"false" as FALSE
+	"null" as NULL
+	"from" as FROM
+	"this" as THIS
+	"chance" as CHANCE
+	"on" as ON
+	"in" as IN
+	"of" as OF
+	"release" as RELEASE
+	"has" as HAS
+	"return" as RETURN
+	"new" as NEW
+	"*" as STAR
+	"/" as SLASH
+	"none" as VOID
+
+generalBrace-s are Braced
+	[\",\"] as QUOTE with WILD as quote
+	[{,}] as BODY with (NEWLINE | COMMENTS | body_element)*
+	[(,)] as METHOD_ARGUMENTS with NEWLINE* statement? ( COMMA NEWLINE* statement)*
+	[(,)] as METHOD_PARAMETERS with ( variable_header ( COMMA variable_header)* )?
+	[(,)] as BRACED_STATEMENT with statement
+	[[,]] as GET_INDEX with statement as getIndex
+
+generalAltBrace-s are CharitableBraced
+	[,\n] as description with WILD as description
+
+num is silent
+	FLOAT
+	INTEGER
+range is silent
+	num as left ((DOTDOT|DASH) num as right) PERCENT as percent?
+operator
+	PLUSEQUALS | MINUSEQUALS | PLUS | MINUS | DIVIDE | MULTIPLY | EQUALS | NOTEQUALS | ORDINAL | EQUALSIGN
+
+body_element
+	return_statement
+	if_statement
+	while_statement
+	for_statement
+	variable_declaration
+	statement
+
+if_statement
+	IF boolean_statement NEWLINE* BODY ( NEWLINE* ELSE NEWLINE* ( BODY | IF boolean_statement NEWLINE* BODY ) ) as else_statement*
+
+for_statement
+	(FOR variable_header COLON statement   NEWLINE* ) as fromList BODY
+	(FOR variable_header ORDINAL statement NEWLINE* ) as fromVariable BODY
+while_statement
+	WHILE statement NEWLINE* BODY
+
+boolean_statement
+	(boolean_element ((AND|OR) as operator boolean_element )*
+boolean_element is silent
+	has_chance
+	statement
+has_chance
+	num PERCENT CHANCE
+
+return_statement
+	RETURN VOID
+	RETURN statement
+
+statement
+	NOT? variable_call ( operator NEWLINE* statement )*
+
+variable_declaration
+	variable_header ( EQUALSIGN statement )?
+variable_header
+	type_name NAME as variableName
+variable_call
+	range as range
+	( TRUE | FALSE | NULL | FLOAT | INTEGER ) as exact
+	BRACED_STATEMENT as braced
+	( method | NAME as variableName | QUOTE ) GET_INDEX* ( DOT  ( method | NAME as variableName ) GET_INDEX* )*
+
+method
+	NEW type_name METHOD_ARGUMENTS
+	NAME as methodName METHOD_ARGUMENTS
+
+type_name
+	NAME as typeName ( DOT NAME as typeName )*

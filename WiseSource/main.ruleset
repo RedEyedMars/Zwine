@@ -1,0 +1,16 @@
+base is silent
+	( NEWLINE | COMMENTS | import_any )*
+import_any
+	IMPORT_EVENT
+	IMPORT_IMAGES
+	IMPORT_CLASSES
+	IMPORT_STATES
+comment-s are Braced
+	[#,#] as COMMENTS with WILD as comment
+
+
+import overview/general/general
+import overview/gui/gui
+import states/states
+import events/events
+import bodies/classes

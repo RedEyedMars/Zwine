@@ -1,0 +1,102 @@
+> String mainStringArgs = "String[]";
+< MouseMotionListener : \java.\awt.\event;
+< MouseListener : \java.\awt.\event;
+< KeyListener : \java.\awt.\event;
+< MouseEvent : \java.\awt.\event;
+< KeyEvent : \java.\awt.\event;
+class 'packageName'."game" Game JPanel MouseListener KeyListener  MouseMotionListener {
+  @boolean running = true;
+  @String loadFileName = '' "./res/saves/auto.save" '';
+  @String saveFileName = '' "./res/saves/auto.save" '';
+  ~Gui gui = null;
+  ~Double lastTick = \System.currentTimeMillis()/1000.0;
+  ~Double thisTick = lastTick;
+  boolean[] pressedKeys = new boolean[128];
+  @void main(String[] args){
+    for String arg: args {
+      if arg.startsWith(''"-s"'') {
+        Game.loadFileName = arg.substring(2);
+        Game.saveFileName = ''"./res/saves/"''\+arg.substring(2);
+      }
+      else if arg.startsWith(''"-i"'') {
+        Game.loadFileName = ''"./res/saves/"''\+arg.substring(2);
+      }
+      else if arg.startsWith(''"-o"'') {
+        Game.saveFileName = ''"./res/saves/"''\+arg.substring(2);
+      }
+      else if arg.startsWith(''"-reset"'') {
+        Game.loadFileName = null;
+      }
+    }
+    new Gui();
+  }
+  void load(Gui gui){
+    this.gui = gui;
+    \setPreferredSize(new Dimension(600,400));
+	\setSize(new Dimension(600,400));
+	gui.addKeyListener(this);
+	gui.addMouseListener(this);
+	gui.addMouseMotionListener(this);
+	if Game.loadFileName != null {
+	  State->Data.loadFile(Game.loadFileName);
+	}
+	else {
+	  State.data = new State->Data();
+	  "currentState".enter();
+	}
+  }
+  void keyReleased(KeyEvent event) {
+    if event.getKeyCode() == 27 {
+      gui.dispose();
+      System.exit(1);
+    }
+    pressedKeys[event.getKeyCode()] = false;
+    if "currentState" != null {
+      "currentState".keyPress(event.getKeyCode());
+    }
+  }
+  void keyPressed(KeyEvent event) {
+    pressedKeys[event.getKeyCode()] = true;
+  }
+  void keyTyped(KeyEvent event) {
+  }
+  void mouseClicked(MouseEvent event) {
+  }
+  void mousePressed(MouseEvent event) {
+    
+  }
+  void mouseReleased(MouseEvent event) {
+    if "currentState" != null {
+      "currentState".mouseRelease(event.getX(),event.getY());
+    }
+  }
+  void mouseExited(MouseEvent event) {
+  }
+  void mouseEntered(MouseEvent event) {  
+  }
+  void mouseDragged(MouseEvent event) {
+  }
+  void mouseMoved(MouseEvent event) {
+    if "currentState" != null {
+      "currentState".mouseHover(event.getX(),event.getY());
+    }
+  }
+
+  void paintComponent(Graphics g){
+    g.setColor(Color.black);
+    g.drawImage(Gui.textBackground,10,180,null);
+    if "currentState" != null {
+      GraphicsHandler handler = new GraphicsHandler(g);
+      "currentState".display(handler);
+      handler.display();
+    }
+  }
+  void update(){
+    thisTick = \System.currentTimeMillis()/1000.0;
+    lastTick = thisTick;
+  }
+  @void transition(State newState){
+    Game.currentState = newState;
+    Gui.refresh();
+  }
+}

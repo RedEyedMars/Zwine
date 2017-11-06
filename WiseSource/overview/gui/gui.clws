@@ -1,0 +1,107 @@
+< BorderLayout : \java.\awt;
+< Dimension    : \java.\awt;
+< JPanel       : \javax.\swing;
+class 'packageName'."gui" Gui JFrame{
+> Set<String> imageLoaders = new HashSet<String>();
+> void setup(){
+  }
+> void image_declaration(IToken declaration){
+    String imageId = 'declaration->"imageId"';
+    String camelImageId = ^declaration->"imageId";
+    String imageIdLoader = 'declaration->"imageId"'\+"Loader";
+    String imageIdLoaderClassName = ^declaration->"imageId"\+"Loader";
+    Gui += class imageIdLoaderClassName / Thread / {
+        void run() {
+          try {
+            Gui->'imageId' = ImageIO.read(new File('' "res/imgs" '', '' 'declaration->"image_file_name"'+"."+'declaration->"image_extension"' ''));
+          }
+          print catch * {}
+        }
+      }
+    Gui->*.prependToBody({
+      'imageIdLoader'.run();
+      'imageIdLoaderClassName' 'imageIdLoader' = new 'imageIdLoaderClassName'();
+      });
+    Gui += @Image 'imageId' = null
+    imageLoaders.add('imageIdLoader');
+  }
+> void output(){
+    Body joinBody = new Body ();
+    for String imageLoader: imageLoaders {
+      joinBody.add(|'imageLoader'.join();|);
+    }
+    
+    Gui->*.appendToBody({
+      try `joinBody` print catch * {}
+      this.setUndecorated(true);
+      this.setBackground(new Color(1.0f,1.0f,1.0f,0.0f));
+	  this.setSize(new Dimension(600,400));
+	  this.setLayout(new BorderLayout());
+      this.setDefaultCloseOperation(\DISPOSE_ON_CLOSE);
+      
+      Gui.refresher = new RefresherThread(this);
+      Gui.refresher.start();
+      Gui.saver = new SaveThread(Game.saveFileName);
+      new Thread(Gui.saver).start();
+      Gui.game.load(this);
+      this.add(game, BorderLayout.CENTER);
+      this.setLocationRelativeTo(null);
+      this.setVisible(true);
+      });
+  }
+  @RefresherThread refresher = null;
+  @SaveThread saver = null;
+  @Game game = new Game();
+  
+  @void refresh(){
+    Gui.refresher.refresh();
+  }
+  void dispose(){
+    Game.running = false;
+    
+    if Gui.saver != null {
+      Gui.saver.end();
+    }
+    if Gui.refresher != null {
+      Gui.refresher.end();
+    }
+    if State.data != null {
+      State.data.write('' "./res/saves/onEnd.save" '');
+      State.data.write(Game.saveFileName);
+    }
+    super.dispose();
+  }
+  class RefresherThread / Thread / {
+    Gui gui = null;
+    ~boolean refresh = false;
+    void end() {
+      if refresh == false {
+        synchronized this {
+          \notifyAll();
+        }
+      }
+    }
+    void refresh(){
+      if refresh == false {
+        synchronized this {
+          refresh = true;
+          \notifyAll();
+        }
+      }
+    }
+    void run(){
+      try {
+        while Game.running {
+          while Game.running && refresh == false {
+            synchronized this {
+              \wait();
+            }
+          }
+          gui.repaint();
+          refresh = false;
+        }
+      }
+      print catch * {}
+    }
+  }
+}

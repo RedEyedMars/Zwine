@@ -1,0 +1,14 @@
+****** Battle ******
+text = "#NO_DESCRIPTION"
+monster/s = Monster[]
+State returnState = null
+BattleEvent event = null
+
+**** BattleEvent ****
+message = "#NO_MESSAGE"
+
+**** MissEvent ****
+[BattleEvent]
+
+**** HitEvent ****
+[BattleEvent]

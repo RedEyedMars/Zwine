@@ -1,0 +1,17 @@
+*** Start ***
+[0]
+	You wake up slowly.
+	You are surrounded by grey stone walls.
+	Feeling the dank air clinging to your lungs.
+	As your eyes adjust, you realize you are in a dark corridor.
+	/n/ What do you do? /hero.name/
+Enter: + hero = new Hero()
+	hero.name = "Bob"
+	+ Battle battle = null
+if hero.name == "Rose": Move Forward:  -> [1]
+Move Backward: -> [2]
+[1]
+	You move forward into the dark hallway.
+[2]
+	You move away from the direction you faced originally.
+	

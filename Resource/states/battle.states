@@ -1,0 +1,60 @@
+*** Battle ***
+[Start]
+	/battle.text/ /n/ /hero.name/ : /hero.hp/ \ /hero.maxHp/
+if battle.monsters.size() > 0 : Attack /battle.monsters[0].name/ :-> [HeroEvent] { battle.event = hero.attack(battle.monsters[0]) }
+if battle.monsters.size() > 1 : Attack /battle.monsters[1].name/ :-> [HeroEvent] { battle.event = hero.attack(battle.monsters[1]) }
+if battle.monsters.size() > 2 : Attack /battle.monsters[2].name/ :-> [HeroEvent] { battle.event = hero.attack(battle.monsters[2]) }
+
+[Continue]
+	/hero.name/ \: /hero.hp/ \ /hero.maxHp/ /n/ vs
+if battle.monsters.size() > 0 :
+	/n/ /battle.monsters[0].name/
+if battle.monsters.size() > 1 :
+	/n/ /battle.monsters[1].name/
+if battle.monsters.size() > 2 :
+	/n/ /battle.monsters[2].name/
+if battle.monsters.size() > 0 : Attack /battle.monsters[0].name/ :-> [HeroEvent] { battle.event = hero.attack(battle.monsters[0]) }
+if battle.monsters.size() > 1 : Attack /battle.monsters[1].name/ :-> [HeroEvent] { battle.event = hero.attack(battle.monsters[1]) }
+if battle.monsters.size() > 2 : Attack /battle.monsters[2].name/ :-> [HeroEvent] { battle.event = hero.attack(battle.monsters[2]) }
+
+[HeroEvent]
+	/battle.event.message/
+Enter:
+	{
+	if battle.monsters.size() > 2 & battle.monsters[2].isDead() {
+	  battle.event.message = battle.event.message + battle.monsters[2].die()
+	  battle.monsters.remove(2)
+	} 
+	if battle.monsters.size() > 1 & battle.monsters[1].isDead() {
+	  battle.event.message = battle.event.message + battle.monsters[1].die()
+	  battle.monsters.remove(1)
+	}
+	if battle.monsters.size() > 0 & battle.monsters[1].isDead() {
+	  battle.event.message = battle.event.message + battle.monsters[0].die()
+	  battle.monsters.remove(0)
+	}
+	}
+
+if  battle.monsters.size() == 1 : Okay:-> [MonsterEvent] { battle.event = monsters[0].attack(hero) }
+if  battle.monsters.size() == 2 : Okay:-> [MonsterEvent] { 
+	battle.event = monsters[0].attack(hero)
+	battle.event = monsters[1].attack(hero) }
+if  battle.monsters.size() == 3 : Okay:-> [MonsterEvent] { 
+	battle.event = monsters[0].attack(hero)
+	battle.event = monsters[1].attack(hero)
+	battle.event = monsters[2].attack(hero) }
+
+[MonsterEvent]
+	/battle.event.message/
+Enter:
+	{
+	if hero.isDead() {
+	  battle.event.message = battle.event.message + hero.die()
+	} 
+	}
+if hero.isDead() : Game Over :-> GameOver[0]
+if hero.isDead() == false : Okay :->[Continue]
+
+**** GameOver ****
+[0]
+	Game Over

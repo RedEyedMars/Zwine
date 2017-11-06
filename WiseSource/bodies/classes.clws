@@ -1,0 +1,114 @@
+
+< Serializable : \java.\io;
+< Random : \java.\util;
+> class 'packageName'."defs" Classes {
+> void getReturnType(IToken body_element, Set<String> typeNames, Context context){
+    body_element : element : return_statement {
+      typeNames.add(\determineType(element->"statement",context));
+    }
+    : if_statement {
+      element : atom : body_element {
+        \getReturnType(atom,typeNames,context);
+      }
+    }
+    : while_statement {
+      element : atom : body_element {
+        \getReturnType(atom,typeNames,context);
+      }
+    }
+	: for_statement {
+      element : atom : body_element {
+        \getReturnType(atom,typeNames,context);
+      }
+    }
+  }
+> void declaration(IToken declaration){
+    String newClassName = ^declaration->"className";
+    Long randomSerial = new Random("Hero".hashCode()).nextLong();
+    String serialValue = randomSerial\+"L";
+    String finalLong = "final long";
+    class 'packageName'."defs" newClassName Object Serializable {
+      @'finalLong' serialVersionUID = 'serialValue';
+      double random(){
+        return Math.random();
+      }
+    }
+    \newClassNameClass.removeMethod(\newClassNameClass.getMethod("getSerialVersionUID"));
+    Context context = Game.getContext().getClassContext(newClassName);
+    declaration : element : class_element {
+      element : atom : extendsClassName {
+        \newClassNameClass.addParentClass(\ExternalClassEntry.classMap.get(^atom));
+      }
+      : implementsClassName {
+        \newClassNameClass.addInterfaceClass(\ExternalClassEntry.classMap.get(^atom));
+      }
+    }
+    declaration : element : class_element {
+      element : atom : variable {
+        String variableName = 'atom->"variableName"';
+        String variableTypeName;
+        if atom->"array_type" == null {
+          if atom->"type_name" != null {
+            variableTypeName = \getTypeName(atom->"type_name");
+          }
+          else {
+            variableTypeName = \determineType(atom->"statement", context);
+          }
+          Statement statement = \getStatement(atom->"statement", context);
+          \newClassName += 'variableTypeName' 'variableName' = `statement`
+          \newClassName += void '"set"+^variableName'('variableTypeName' '"new"+^variableName'){
+              'variableName' = '"new"+^variableName';
+            }
+        }
+        else {
+          ~String pluralizer = "";
+          if atom->"pluralizer" != null {
+            pluralizer = 'atom->"pluralizer"';
+          }
+          variableTypeName = \addListVariable(variableName, pluralizer, 'atom->"array_type"', \newClassNameClass);
+        }
+        if atom->"IDENTIFIER" != null {
+          if classIdentifierMap.containsKey(newClassName) == false {
+            classIdentifierMap.put(newClassName, new ArrayList<String>());
+            classIdentifierClassMap.put(newClassName, new ArrayList<String>());
+          }
+          classIdentifierMap.get(newClassName).add('variableName');
+          classIdentifierClassMap.get(newClassName).add('variableTypeName');
+        }
+      }
+      element : atom : method {
+        String methodTypeName;
+        String methodName = 'atom->"methodName"';
+        Method methodDummy = void dummyMethod(){};
+        context.add(methodDummy);
+        Context methodContext = methodDummy.getContext();
+        Parameters parameters = new Parameters ();
+        atom : quark : variable_header {
+          String typeName = \getTypeName(quark->"type_name");
+          String variableName = 'quark->"variableName"';
+          Variable param = new Variable (new StringEntry('typeName'),new StringEntry('variableName')); 
+          parameters.add(param);
+          methodContext.add(param);
+        }
+        Body methodBody = \getBodyElements(atom->"body", methodContext);
+        if atom->"type_name" != null {
+          methodTypeName = \getTypeName(atom->"type_name");
+        }
+        else {
+          Set<String> typeNames = new HashSet<String>();
+          atom->"body" : quark : body_element {
+            \getReturnType(quark,typeNames,methodContext);
+          }
+          if typeNames.isEmpty() == false {
+            methodTypeName = typeNames.iterator().next();
+          }
+          else {
+            methodTypeName = "void";
+          }
+        }
+        \newClassName += 'methodTypeName' 'methodName' `parameters`{}
+        $\newClassName->*'methodName'.appendToBody(methodBody);
+      }
+    }
+  }
+}

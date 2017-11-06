@@ -1,0 +1,26 @@
+#CLASSES
+
+defined_class_name-s are empty
+classToken-s
+	"def" as DEF
+	"*" as CLASS_DEF
+	"/i/" as IDENTIFIER
+	"[]" as ARRAY_TYPE
+	"/" as SLASH
+
+classBrace-s are Braced
+	[,.]  as CLASS_FILE with WILD as class_file_name
+	[[,]]  as EX_CLASS with (COMMA | NAME as extendsClassName ) ( COMMA? NAME as implementsClassName )*
+
+classImport-s are Import
+	[><<\"defs/\",class_file_name,\".def\">>\n] as IMPORT_CLASSES from (NEWLINE|COMMENTS|class_declaration)*; with CLASS_FILE DEF
+
+class_declaration
+	CLASS_DEF+ NAME as className CLASS_DEF+ ( class_element )+
+class_element
+	EX_CLASS
+	( type_name NAME as methodName METHOD_PARAMETERS BODY as body ) as method
+	( NAME as methodName METHOD_PARAMETERS BODY as body ) as method
+	( IDENTIFIER? type_name NAME as variableName ( SLASH NAME as pluralizer )? EQUALSIGN ( type_name as array_type ARRAY_TYPE | statement ) ) as variable
+	( IDENTIFIER?           NAME as variableName ( SLASH NAME as pluralizer )? EQUALSIGN ( type_name as array_type ARRAY_TYPE | statement ) ) as variable
+	NEWLINE+

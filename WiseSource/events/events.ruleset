@@ -1,0 +1,16 @@
+
+#EVENTS
+event_name-s are empty
+eventToken-s
+	[[a-zA-Z_][a-zA-Z0-9_]*] as NAME
+	[.*] as WILD
+	"\n" as NEWLINE
+	"\n\t" as NEWTAB
+	"evts" as EVTS
+	"event" as EVENT
+eventBrace-s are Braced
+	[,.] as EVENT_FILE with WILD as event_file_name 
+eventImport-s are Import
+	[><<\"events/\",event_file_name,\".evts\">>\n] as IMPORT_EVENT from (NEWLINE|COMMENTS|event_declaration)*; with EVENT_FILE EVTS
+event_declaration
+	NAME as eventName in event_names (COMMENTS|(NEWTAB type_name NAME as name) as parameter|NEWLINE)*

@@ -1,0 +1,335 @@
+> Body getStateBodyElements(IToken elementsToken, Context context){
+    Body result = new Body ();
+    result.setParentContext(context);
+    elementsToken : element : body_element {
+      result.add(\getStateBodyElement(element,result.getContext()));
+    }
+    return result;
+  }
+> Statement getStateBodyElement(IToken elementToken, Context context){
+    elementToken : element
+      : statement {
+        return | `\getStateStatement(element, context)` ; | ;
+      }
+      : return_statement {
+        return |return `\getStateStatement(element, context)`;|;
+      }
+	  : variable_declaration {
+	    return \getStateVariableDeclaration(element, context);
+	  }
+      : if_statement {
+        return \getStateIfStatement(element, context);
+      }
+      : for_statement {
+        return \getStateForStatement(element, context);
+      }
+    return null;
+  }
+> Statement getStateVariableDeclaration(IToken variableDeclarationToken, Context context){
+	String typeName = \getTypeName(variableDeclarationToken->"variable_header"->"type_name");
+    Context type = context.getClassContext(typeName);
+    if type == null {
+      throw \Generator.completeTokenErrorMessage(variableDeclarationToken) + "Could not find type:" + typeName + "!";
+    }
+    if variableDeclarationToken->"statement" != null {
+      return | 'typeName' 'variableDeclarationToken->"variable_header"->"variableName"' = `\getStateStatement(variableDeclarationToken->"statement", context)`; |;
+    }
+    else {
+      return | 'typeName' 'variableDeclarationToken->"variable_header"->"variableName"' = null; |;
+    }
+  }
+> Statement getStateIfStatement(IToken ifStatementToken, Context context){
+    Statement header     = new Statement ();
+    Statement elseHeader = new Statement ();
+    Body      body       = new Body ();
+    Body      elseBody   = new Body ();
+    ~Integer   mode       = 0;
+    ifStatementToken : element
+      : boolean_statement {
+        header.add(\getStateBooleanStatement(element, context));
+      }
+      : body_element {
+        body.add(\getStateBodyElement(element, context));
+      }
+      : else_statement {
+        mode = 1;
+        element : atom
+          : body_element {
+            elseBody.add(\getStateBodyElement(atom,context));
+          }
+          : boolean_statement {
+            elseHeader.add(\getStateBooleanStatement(atom,context));
+            mode = 2;
+          }
+      }
+    if      mode == 0 { return |if `header` `body`                                 |; }
+    else if mode == 1 { return |if `header` `body` else                 `elseBody` |; }
+    else if mode == 2 { return |if `header` `body` else if `elseHeader` `elseBody` |; }
+    else              { return null;                                              }
+  }
+> Statement getStateForStatement(IToken forStatementToken, Context context){
+    
+    if forStatementToken->"fromList" != null {
+      IToken variableHeaderToken = forStatementToken->"fromList"->"variable_header";
+      String typeName = \getTypeName(variableHeaderToken->"type_name");
+      Context type = context.getClassContext(typeName);
+      if type == null {
+        throw \Generator.completeTokenErrorMessage(variableHeaderToken) + "Could not find type:" + typeName + "!";
+      }
+      context.add('typeName' 'variableHeaderToken->"variableName"';);
+      Statement right = \getStateStatement(forStatementToken->"fromList"->"statement", context) ;
+      Body body = \getStateBodyElements(forStatementToken, context);
+      return |for 'typeName' 'variableHeaderToken->"variableName"' : `right` `body`|;
+    }
+    return null;
+  }
+
+
+> Statement getStateBooleanStatement(IToken booleanStatement, Context context){
+    return \getStateBooleanStatement(booleanStatement, false, context);
+  }
+> Statement getStateBooleanStatement(IToken booleanStatement, Boolean negate, Context context){
+    Statement operator = new Statement();
+    booleanStatement : element
+    	: has_chance {
+    		operator.add(\getChance(element));
+    	  }
+    	: statement {
+     	    operator.add(\getStateStatement(element,negate,context));
+    	  }
+    	: operator {
+     	    if 'element' == "&" {
+     	      if negate {
+     	        operator.set("||");
+     	      }
+     	      else {
+     	        operator.set("&&");
+     	      }
+            }
+            else if 'element' == "|" {
+               if negate {
+                 operator.set("&&");
+               }
+               else {
+                 operator.set("||");
+               }
+            }
+    	  }
+     return operator;
+  }
+> Statement getStateStatement(IToken statementToken, Context context){
+    return \getStateStatement(statementToken,false,context);
+  }
+> Statement getStateStatement(IToken statementToken,Boolean initialNegate, Context context){
+	Statement ret = new Statement();
+	~Boolean negate = initialNegate;
+	statementToken : element
+	  : NOT { negate =! negate; }
+	  : variable_call {
+		Statement variableCall = \getStateVariableCall(element,context);
+		ret.add(variableCall);
+	  }
+	  : statement {
+		Statement subStatement = \getStateStatement(element,context);
+		ret.add(subStatement);
+	  }
+	  : operator {
+		if negate {
+		  ret.set(\negateOperator('element'));
+		}
+		else {
+		  ret.set('element');
+		}
+	  }
+	  : braced {
+		Statement subStatement = \getStateStatement(element,context);
+		subStatement.brace();
+		ret.add(subStatement);
+	  }
+	if ret.getSize() == 1 && negate {
+	  ret.negate();
+	}
+	return ret;
+  }
+
+> Statement getStateVariableCall(IToken variableCallToken, Context context){
+	~Context currentContext = context;
+	Statement ret = new Statement(".");
+	variableCallToken : element
+	  : range {
+	    ret.add(|new Range('element->"left"','element->"right"')|);
+	  }
+	  : braced {
+		Statement subStatement = \getStateStatement(element,context);
+		subStatement.brace();
+		ret.add(subStatement);
+	  }
+	  : exact {
+	    if element->"FLOAT" != null {
+	      ret.add(|'element'+"f"|);
+	    }
+	    else {
+	      ret.add(|'element'|);
+	    }
+	  }
+	  : quote {
+	    ret.add(|''element''|);
+	  }
+	  : cast {
+	    String typeName = \getTypeName(element->"type_name");
+	    Context typeContext = currentContext.getClassContext(typeName);
+	    if typeContext == null {
+		    throw "Could not find "+'typeName'+" type in context!";
+		}
+		
+	    Statement castStatement = new Statement ();
+	    castStatement.add(|$'typeName'|);
+	    castStatement.brace();
+	    Statement fullStatement = new Statement();
+	    fullStatement.add(castStatement);
+	    fullStatement.add(\getStateStatement(element->"statement",context));
+		ret.add(fullStatement);
+	  }
+	  : getIndex {
+	    String methodName = "get";
+		Parameters parameters = new Parameters();
+		element : atom
+		  : statement {
+			parameters.add(\getStateStatement(atom,context));
+		  }
+		currentContext = currentContext.link(methodName);
+		if currentContext == null {
+		  throw "Could not find GET in context!";
+		}
+		ret.add(|\get(`parameters`)|);
+	  }
+	  : variableName {
+	  	currentContext = currentContext.link('element'); 
+		if currentContext == null {
+		    throw "Could not find "+'element'+" variable in context!";
+		}
+		if  ret.size() == 0 {
+		  ret.add(|State."data".'"get"+^element'()|);
+		}
+		else {
+		  ret.add(|'"get"+^element'()|); #MIGHT HAVE TO IMPLEMENT ^'X'#
+		}
+	  }
+	  : method {
+		String methodName;
+		if element->"methodName" != null {
+		  methodName = 'element->"methodName"';
+		}
+		else {
+		  methodName = \getTypeName(element->"type_name");
+		}
+		Parameters parameters = new Parameters();
+		element : atom
+		  : statement {
+			parameters.add(\getStateStatement(atom,context));
+		  }
+		if element->"NEW" != null {
+          currentContext = currentContext.getClassContext(methodName);
+		  if currentContext == null {
+		    throw "Could not find \"+methodName+\" type in context!";
+		  }
+		  ret.add(|new 'methodName'(`parameters`)|);
+		}
+	  	else {
+		  currentContext = currentContext.link(methodName);
+		  if currentContext == null {
+		    throw "Could not find "+'element'+" method in context!";
+		  }
+		  ret.add(|'element'(`parameters`)|);
+		}
+	  }
+	if currentContext != null && currentContext.hasEnder() {
+	  ret.add(currentContext.getEnder());
+	}
+	return ret;
+  }
+
+> Map<String, List<String>> classIdentifierMap      = new HashMap<String,List<String>>();
+> Map<String, List<String>> classIdentifierClassMap = new HashMap<String,List<String>>();
+> String addListVariable(String listName, String pluralizer, String listType, Class acceptingClass){
+    if classIdentifierMap.containsKey(listType) == false || classIdentifierMap.get(listType).isEmpty() {
+      acceptingClass += ~List<'listType'> 'listName+pluralizer' = new ArrayList<'listType'>()
+      acceptingClass += 'listType' '"get"+^listName'(Integer '"indexOf"+^listName'){
+              return 'listName+pluralizer'.get('"indexOf"+^listName');
+            }
+      acceptingClass += void '"add"+^listName'('listType' '"new"+^listName'){
+              'listName+pluralizer'.add('"new"+^listName');
+            }
+      acceptingClass += void '"remove"+^listName'('listType' '"new"+^listName'){
+              'listName+pluralizer'.remove('"new"+^listName');
+            }
+      return "List<"\+'listType'\+">";
+    }
+    else {
+      String realListName = 'listName'\+pluralizer;
+      ~String realListType = listType;
+      ~Integer i = classIdentifierMap.get('listType').size()\-1;
+      Map<Integer,String> intermittentTypes = new HashMap<Integer,String>();
+      while i >= 0 {
+        intermittentTypes.put(i,realListType);
+        realListType = "Map<"\+classIdentifierClassMap.get('listType').get(i)\+","\+realListType\+">";
+        i \-= 1;
+      }
+      String realListTypeValue = realListType;
+      acceptingClass += ~'realListTypeValue' 'realListName' = new '"Hash"+realListTypeValue'()
+      String newVariable = '"new"+^listName';
+      String addMethodName = '"add"+^listName';
+      String removeMethodName = '"remove"+^listName';
+      acceptingClass += void 'addMethodName'('listType' 'newVariable'){
+            }
+      acceptingClass += void 'removeMethodName'('listType' 'newVariable'){
+            }
+      ~Statement currentListName = new Statement();
+      currentListName.add(|'realListName'|);
+      ~Statement currentListIndex = new Statement();
+      currentListIndex.add(|'realListName'|);
+      Parameters currentListGetParameters = new Parameters();
+      for Integer j < classIdentifierMap.get('listType').size()\-1{
+        Statement currentListNameValue = currentListName;
+        Statement currentListIndexValue = currentListIndex;
+        String identifier = classIdentifierMap.get('listType').get(j);
+        String identifierClass = classIdentifierClassMap.get('listType').get(j);
+        acceptingClass->*'addMethodName'.appendToBody({
+            if `currentListNameValue`.containsKey('newVariable'.'"get"+^identifier'()) == false {
+              `currentListNameValue`.put('newVariable'.'"get"+^identifier'(), new '"Hash"+intermittentTypes.get(j)'());
+            }
+          });
+        currentListName = |`currentListNameValue`.get('newVariable'.'"get"+^identifier'())|;
+        currentListIndex = |`currentListIndexValue`.get('"key"+^identifier')|;
+        currentListGetParameters.add(new Variable (|'identifierClass'|,|'"key"+^identifier'|));
+      }
+      Integer lastIndex = classIdentifierMap.get('listType').size()\-1;
+      Statement currentListNameValue = currentListName;
+      Statement currentListIndexValue = currentListIndex;
+      String identifier = classIdentifierMap.get('listType').get(lastIndex);
+      String identifierClass = classIdentifierClassMap.get('listType').get(lastIndex);
+      currentListGetParameters.add(new Variable (|'identifierClass'|,|'"key"+^identifier'|));
+      acceptingClass += 'listType' '"get"+^listName' `currentListGetParameters` {
+           return `currentListIndexValue`.get('"key"+^identifier');
+        }
+      acceptingClass->*'addMethodName'.appendToBody({
+        `currentListNameValue`.put('newVariable'.'"get"+^identifier'(), 'newVariable');
+        });
+      acceptingClass->*'removeMethodName'.appendToBody({
+        `currentListNameValue`.remove('newVariable'.'"get"+^identifier'());
+        });
+      return 'realListTypeValue';
+    }
+  }
+
+> void addStorageElement(String type, String name, Class storageClass){
+    storageClass->*"save".appendToBody({
+      "writer".writeAsBoolean('name' == null);
+      "writer".write('name');});
+    storageClass->*"load".appendToBody({
+        try {
+          "acceptor".accept(State->Data->Variables.valueOf('' 'name' ''),"reader".readAsBoolean() ? null : "reader".read());
+        }
+        catch * {}
+      });
+  }

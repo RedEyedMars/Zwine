@@ -1,0 +1,90 @@
+< Entry : \com.\rem.\parser.\generation;
+> VersionIdentifier version = new VersionIdentifier();
+> VersionIdentifier getVersionId(){
+    return version;
+  }
+> void setVersionId(Integer newVersion){
+    \__VAR__version.setId(newVersion);
+  }
+> class VersionIdentifier // Entry {
+    ~Integer id = 0;
+    void get(StringBuilder builder){
+      builder.append(id);
+    }
+    void setId(Integer newID){
+      id = newID;
+    }
+  }
+import headers.clws
+
+#import images/image.clws#
+
+
+import states/states.clws
+import bodies/classes.clws
+import events/events.clws
+import overview/general/general.clws
+import overview/gui/gui.clws
+import overview/games.clws
+import overview/saves.clws
+
+> void assignListElementNames(ParseContext context, IToken root){}
+> String getDirectory(String fileName, String knownDirectory){
+>	return "../Resource/";
+  }
+> void setup(ParseContext data){
+  }
+> void generate(ParseContext data){
+	\setup("../ZWine/src");
+	Gui.setup();
+	States.setup();
+	IToken root = data.getRoot();
+	root : imports : import_any {
+		\importClasses(imports);
+	}
+	root : imports : import_any {
+		\importMethods(imports);
+	}
+	Gui.output();
+	State->Data.output();
+	\output(data);
+}
+> Classes classHandler = new Classes();
+> void importClasses(IToken import_any){
+	import_any : import_events : IMPORT_EVENT {
+		import_events : element : event_declaration {
+			Events.declaration(element);
+		}
+	}
+	import_any : import_classes : IMPORT_CLASSES {
+	    import_classes : import_class : class_declaration {
+			classHandler.declaration(import_class);
+		}
+	}
+  }
+> void importMethods(IToken import_any){
+	import_any : import_images : IMPORT_IMAGES {
+	    import_images : import_image : image_declaration {
+			Gui.image_declaration(import_image);
+		}
+	}
+	import_any : import_map : IMPORT_STATES {
+	    import_map : import_state : state_declaration {
+			States.declaration(import_state);
+		}
+	}
+ }
+> String getTypeName(IToken nameToken){
+	StringBuilder nameBuilder = new StringBuilder();
+	~Boolean isFirst = true;
+	nameToken : element : typeName {
+		if isFirst==false {
+			nameBuilder.append(".");
+		}
+		else {
+			isFirst =false;
+		}
+		nameBuilder.append(^element);
+	}
+	return 'nameBuilder';
+ }

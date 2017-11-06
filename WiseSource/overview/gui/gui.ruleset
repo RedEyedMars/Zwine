@@ -1,0 +1,23 @@
+#GUI
+
+image_name-s are empty
+guiToken-s
+	[[a-zA-Z_][a-zA-Z0-9_]*] as NAME
+	[.*] as WILD
+	"imgs" as IMGS
+	"png" as PNG
+	"jpeg" as JPEG
+	"bmp" as BMP
+
+
+guiBrace-s are Braced
+	[,.]  as IMAGE_FILE with WILD as image_file_name
+
+image_extension
+	PNG | JPEG | BMP
+
+guiImport-s are Import
+	[><<\"gui/images/\",image_file_name,\".imgs\">>\n] as IMPORT_IMAGES from (NEWLINE|COMMENTS|image_declaration)*; with IMAGE_FILE IMGS
+
+image_declaration
+	NAME as imageId ( INTEGER as width ( CROSS INTEGER as height )? ) as dimensions? COLON IMAGE_FILE image_extension 

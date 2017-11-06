@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="build_all" name="Create Runnable Jar for Project OTLPc">
+    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
+    <!--ANT 1.7 is required                                        -->
+    <!--define folder properties-->
+    <property name="dir.buildfile" value="../"/>
+    <property name="dir.workspace" value="${dir.buildfile}/../"/>
+    <property name="dir.jarfile" value="${dir.buildfile}/../"/>    
+  	<property name="dir.items" value="${dir.buildfile}/GeneratedItems/"/>
+  	<property name="dir.srcs" value="${dir.buildfile}/WiseSource/"/>
+  	<target name="make_item_ruleset">
+        <java jar="../rrlg.jar" fork="true">
+            <arg line="${dir.items}/items.ruleset" />
+        </java>
+    </target>
+    <target name="make_item_gen">
+        <java jar="../rgg.jar" fork="true">
+            <arg line="./items/items.generator" />
+        </java>
+    </target> 
+    <target name="make_main_ruleset">
+        <java jar="../rrlg.jar" fork="true">
+            <arg line="${dir.srcs}/main.ruleset" />
+        </java>
+    </target>
+    <target name="make_main_gen">
+        <java jar="../rclwg.jar" fork="true">
+            <arg line="${dir.srcs}/main.clws" />
+        </java>
+    </target>
+    <target name="make_gui_ruleset">
+        <java jar="../rrlg.jar" fork="true">
+            <arg line="${dir.srcs}/gui/gui.ruleset" />
+        </java>
+    </target>
+    <target name="make_gui_gen">
+        <java jar="../rclwg.jar" fork="true">
+            <arg line="${dir.srcs}/gui.clws" />
+        </java>
+    </target>      
+    <target name="make_items">
+       <antcall target="make_item_ruleset"/>
+       <antcall target="make_item_gen"/>
+    </target>
+    <target name="make_main">
+       <antcall target="make_main_ruleset"/>
+       <antcall target="make_main_gen"/>
+    </target>
+    <target name="import_jars">
+        <jar destfile="${dir.buildfile}/rrlg.jar" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Main-Class" value="gen.BaseFlow"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+            <fileset dir="../../RemLang/GeneratedBase/bin"/>
+            <zipfileset excludes="META-INF/*.SF" src="../../RemLang/engraver.jar"/>
+        </jar>
+        <jar destfile="${dir.buildfile}/rclwg.jar" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Main-Class" value="gen.StdFlow"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+            <fileset dir="../../RemLang/GeneratedClasswise/bin"/>
+            <zipfileset excludes="META-INF/*.SF" src="../../RemLang/engraver.jar"/>
+        </jar>
+    </target>
+  	<target name="retro_replace_base">    	
+        <delete dir="${dir.base}/src/base" failonerror="true"/>
+        <copy todir="${dir.base}/src/base">  
+             <fileset dir="${dir.genBase}/src/base" includes="**"/>
+        </copy>
+  	</target>
+    <target name="build_all">
+        <antcall target="import_jars"/>
+       <antcall target="make_items"/>
+    </target>
+</project>

@@ -1,0 +1,586 @@
+import state_statements.clws
+< ExternalImportEntry : \com.\rem.\parser.\generation.\classwise;
+< StringEntry : \com.\rem.\parser.\generation;
+class 'packageName'."states" States {
+> Set<String> entersAdded = new HashSet<String>();
+> Set<String> exitsAdded = new HashSet<String>();
+> Set<String> listsAdded = new HashSet<String>();
+> ~Boolean firstStateAdded = false;
+> ~Integer stateId = 0;
+> Body createSwitchBody = new Body ();
+  @State create(int stateId){
+    switch stateId `createSwitchBody`
+    return null;
+  }
+> void setup(){
+  }
+> void declaration(IToken declaration){
+    String stateName = 'declaration->"stateName"';
+    String stateClassName = ^stateName;
+    declaration : element : subState {
+      String subStateName = 'element->"transitionIndex"';
+      String subStateClassName = ^subStateName;
+      \definition(element, stateName, stateClassName, stateName\+subStateName, stateClassName\+subStateClassName );
+    }
+  }
+> void definition(IToken definition, String parentStateName, String parentStateClassName, String stateName, String stateClassName){
+    ~boolean firstSelectedAdded = false;
+    Body transitionSwitchBody = new Body ();
+    Body transitionTextSwitchBody = new Body ();
+    Integer stateIdValue = stateId;
+    State.stateVersionId \+= stateClassName.hashCode();
+    createSwitchBody.add(|
+      case 'stateId' {
+        return new 'stateClassName'();
+      }|);
+    States += class stateClassName / State / {
+        String getTransitionText(States->\stateClassName->Transition->Id transitionId){
+          switch transitionId `transitionTextSwitchBody`
+          return null;
+        }
+        State transition(States->\stateClassName->Transition->Id transitionId){
+          switch transitionId `transitionSwitchBody`
+          return this;
+        }
+        void enter(){
+        }
+        void exit(){
+        }
+        void display(GraphicsHandler g){
+          int yOffset = 0;
+        }
+        
+        void mouseRelease(int x, int y){
+          int yOffset = 0;
+        }
+        void mouseHover(int x, int y){
+          int yOffset = 0;
+        }
+        int getId(){
+          return 'stateIdValue';
+        }
+      }
+    
+    stateId \+= 1;
+    States->'stateClassName' += class Transition // {
+      }
+    States->'stateClassName'->Transition += enum Id // {
+      }
+    if firstStateAdded == false {
+      Game += @State currentState = new States->'stateClassName'()
+    }
+    ~Integer displayLineIndex = -1;
+	List<String> displayLines = new ArrayList<String>();
+	List<String> choiceNameLines = new ArrayList<String > ();
+	List<String> choiceEnumLines = new ArrayList<String > ();
+	List<Statement > conditionStatements = new ArrayList<Statement > ();
+	~String firstChoiceEnum = null;
+	Body completeDisplayBody = new Body ();
+    definition : element : stateChange {
+      Body changeBody = new Body ();
+      ~Integer currentIndex = 0;
+      ~String previousStateTransition = null;
+      ~Integer previousIndex = -1;
+      ~Context context = State->Data.getContext();
+      element : atom : entry_element {
+      	context = State->Data.getContext();
+      	if atom->"PLUS" != null {
+      	  Statement variableName = new Statement();
+          variableName.set(".");
+          variableName.add(|State|);
+          variableName.add(|"data"|);
+          atom : quark : variableName {
+            variableName.add(|'"get"+^quark'()|);
+          }
+          Statement newVariableAssignment = \getStateStatement(atom->"statement", context);
+          String newVariableName = 'atom->"newVariable"';
+          String newVariableType;
+          
+          if atom->"type_name" != null {
+            newVariableType = \getTypeName(atom->"type_name");
+          }
+          else {
+            newVariableType = \determineType(atom->"statement",context);
+          }
+          State->Data += 'newVariableType' 'newVariableName' = null
+          State->Data->Variables += 'newVariableType' 'newVariableName' = null
+          State->Data.acceptSwitchBody.add(|case 'newVariableName' { '"set"+^newVariableName'(('newVariableType')"toSet"); "break";}|);
+          State->Data += void '"set"+^newVariableName'('newVariableType' '"new"+^newVariableName'){
+              if 'newVariableName' == null {
+                'newVariableName' = '"new"+^newVariableName';
+              }
+            }
+          \addStorageElement('newVariableType', 'newVariableName', State->Data);
+          changeBody.add(|`variableName`."set"+'^newVariableName'(`newVariableAssignment`);|);
+      	}
+        else if atom->"PLUSEQUALS" != null || atom->"MINUSEQUALS" != null{
+          Statement variableNameWithoutLast = new Statement();
+          variableNameWithoutLast.set(".");
+          variableNameWithoutLast.add(|State|);
+          variableNameWithoutLast.add(|"data"|);
+          ~String lastVariableName = null;
+          ~Integer numberOfVariableNames = 0;
+          ~String previousVariableName = null;
+          atom : quark : variableName {
+            if previousVariableName != null {
+              variableNameWithoutLast.add(|'"get"+^previousVariableName'()|);
+            }
+            lastVariableName = 'quark';
+            previousVariableName = 'quark';  
+            numberOfVariableNames \+= 1;
+          }
+          Statement newVariableAssignment = \getStateStatement(atom->"statement", context);
+          String listType = \determineType(atom->"statement",context);
+          if numberOfVariableNames == 1 && listsAdded.add('lastVariableName') {
+            ~String pluralizer = "";
+            if atom->"pluralizer" != null {
+              pluralizer = 'atom->"pluralizer"';
+            }
+            String newVariableType = \addListVariable('lastVariableName', pluralizer, 'listType', State->Data);
+            
+            String newVariableName = 'lastVariableName' \+ pluralizer;
+            State->Data->Variables += 'newVariableType' 'newVariableName' = null
+            State->Data.acceptSwitchBody.add(|case 'newVariableName' { '"set"+^newVariableName'(('newVariableType')"toSet"); "break";}|);
+            \addStorageElement('newVariableType', 'newVariableName', State->Data);
+          }
+          if atom->"PLUSEQUALS" != null {
+            changeBody.add(|`variableNameWithoutLast`.'"add"+^lastVariableName'(`newVariableAssignment`);|);
+          }
+          else {
+            changeBody.add(|`variableNameWithoutLast`.'"remove"+^lastVariableName'(`newVariableAssignment`);|);          
+          }
+        }
+        else if atom->"EQUALSIGN" != null {
+          List<String> variableNames = new ArrayList<String>();
+          atom : quark : variableName {
+            variableNames.add(^quark);
+          }
+          Statement  changeToAdd = new Statement ();
+          changeToAdd.set(".");
+          changeToAdd.add(|State|);
+          changeToAdd.add(|"data"|);
+          for Integer i < variableNames.size() \-1 {
+            changeToAdd.add(|"get"+'variableNames.get(i)'()|);
+          }
+          changeToAdd.add(|"set"+'variableNames.get(variableNames.size() \-1)'(`\getStateStatement(atom->"statement", context)`)|);
+          changeBody.add(|`changeToAdd`;|);
+        }
+        else if atom->"transition" != null {
+          atom : quark : transition {
+            Integer currentIndexValue = currentIndex;
+            Integer previousIndexValue = previousIndex;
+            currentIndex \+= 1;
+            previousIndex \+= 1;
+            
+            String transitionStateClassName;
+            if quark->"transitionStateName" != null {
+              transitionStateClassName = ^quark->"transitionStateName" \+ ^quark->"transitionIndex";
+            }
+            else {
+              
+              transitionStateClassName = parentStateClassName \+ ^quark->"transitionIndex";
+            }
+            previousStateTransition = transitionStateClassName;
+            if currentIndexValue == 0 {
+              changeBody.add(|
+	            \exit();
+	            States->'transitionStateClassName' "newState"+'currentIndexValue' = new 'transitionStateClassName'();
+	            "newState"+'currentIndexValue'.enter();  |);
+            }
+            else {
+              changeBody.add(|
+	            "newState"+'previousIndexValue'.\exit();
+	            States->'transitionStateClassName' "newState"+'currentIndexValue' = new 'transitionStateClassName'();
+	            "newState"+'currentIndexValue'.enter();  |);
+            }
+          }
+        }
+      }
+      if currentIndex > 0 {
+        String previousStateTransitionValue = previousStateTransition;
+        Integer previousIndexValue = previousIndex;
+        changeBody.add(|'previousStateTransitionValue' newState = "newState"+'previousIndexValue';|);
+      }
+      if element->"ENTER" != null {
+		States->'stateClassName'->*"enter".appendToBody(changeBody);
+		firstStateAdded = true;
+	  }
+	  else if element->"EXIT" != null {
+		States->'stateClassName'->*"exit".appendToBody(changeBody);
+        firstStateAdded = true;
+	  }
+	  else {
+	    Body transitionBody = new Body ();
+	    StringBuilder choiceEnum = new StringBuilder();
+	    StringBuilder choiceNameBuilder = new StringBuilder();
+	    element : atom : choiceName {
+          atom : quark : descriptor {
+            if quark->"special_descriptor" == null {
+              choiceNameBuilder.append(" ");
+              choiceNameBuilder.append('quark');
+            }
+            else {
+              quark : quanta : special_descriptor {
+                quanta : string : newline {
+                  choiceNameBuilder.append("\n");
+                }
+                : statement {
+                  choiceNameBuilder.append(" \"+");
+                  Statement statement = \getStateStatement(string,context);
+                  statement.get(choiceNameBuilder);
+                  choiceNameBuilder.append("+\"");
+                }
+              }
+            }
+          }
+        }
+	    String choiceName = 'choiceNameBuilder';
+	    if choiceName.matches("\\s*") {
+	      return void;
+	    }
+	    ~boolean doom = false;
+	    for char c: choiceName.toCharArray() {
+	      if doom == false {
+	        if (""\+c).\matches("[a-zA-Z0-9 \\t]") {
+	          if (""\+c).\matches("[a-zA-Z0-9]") {
+	            choiceEnum.append(""\+c);
+	          }
+	        }
+	        else {
+	          doom = true;
+	        }
+	      }
+	    }
+	    choiceEnum.append(choiceNameLines.size());
+	    
+	    if firstChoiceEnum == null {
+	      firstChoiceEnum = 'choiceEnum';
+	    }
+	    
+	    transitionTextSwitchBody.add(|case 'choiceEnum' { return '' choiceName '';}|);
+	    transitionSwitchBody.add(|case 'choiceEnum' `transitionBody`|);
+	    transitionBody.add(changeBody);
+	    transitionBody.add(|return "newState";|);
+	    
+	    choiceNameLines.add(choiceName);
+	    choiceEnumLines.add('choiceEnum');
+	    States->'stateClassName'->Transition->\Id += void 'choiceEnum' = null
+	    if element->"boolean_statement" != null{
+	      conditionStatements.add(\getStateBooleanStatement(element->"boolean_statement",context));
+	    }
+	    else {
+	      conditionStatements.add(null);
+	    }
+	  }
+    }
+    definition : element : stateDescription {
+      StringBuilder linesBuilder = new StringBuilder();
+      Context context = State->Data.getContext();
+      element : atom : descriptionLine {
+        atom : quark : descriptor {
+          if quark->"special_descriptor" == null {
+            linesBuilder.append(" ");
+            linesBuilder.append('quark');
+          }
+          else {
+            quark : quanta : special_descriptor {
+              quanta : string : newline {
+                linesBuilder.append("\n");
+              }
+              : statement {
+                linesBuilder.append(" \"+");
+                Statement statement = \getStateStatement(string,context);
+                statement.get(linesBuilder);
+                linesBuilder.append("+\"");
+              }
+            }
+          }
+        }
+      }
+      Integer displayLineIndexStartValue = displayLineIndex\+1;
+	  displayLineIndex = \handleLines('linesBuilder', displayLines, displayLineIndex);
+	  Integer displayLineIndexEndValue = displayLineIndex;
+      ~Integer i =  displayLineIndexStartValue;
+	  while i <= displayLineIndexEndValue {
+	    Integer yOffset = 205\+i*15;
+	    Integer xOffset = 30;
+	    States->'stateClassName'->*"display".appendToBody({
+	       "g".drawString('' 'displayLines.get(i)' '', 'xOffset','yOffset');
+	      });
+	    i \+= 1;
+	  }
+    }
+    if firstChoiceEnum != null {
+      firstSelectedAdded = true;
+      String firstChoiceEnumValue = firstChoiceEnum;
+	  States->'stateClassName' += States->'stateClassName'->Transition->Id selected = null
+	  States->'stateClassName'->*"mouseRelease".appendToBody({
+	    \mouseHover("x","y");
+        Game.transition(\transition("selected"));
+        });
+	  displayLineIndex \+= 1;
+	  displayLines.add("");
+    }
+    for Integer choiceIndex < choiceNameLines.size() {
+	  displayLineIndex \+= 1;
+	  displayLines.add("");
+      String choiceName = choiceNameLines.get(choiceIndex);
+      String choiceEnum = choiceEnumLines.get(choiceIndex);
+      Statement conditionStatement = conditionStatements.get(choiceIndex);
+      Integer displayLineIndexStartValue = displayLineIndex\+1;
+	  displayLineIndex = \handleLines(choiceName, displayLines, displayLineIndex);
+	  Integer displayLineIndexEndValue = displayLineIndex;
+	   
+	   
+	  Body conditionBody = new Body ();
+	  ~Integer i =  displayLineIndexStartValue;
+	  while i <= displayLineIndexEndValue {
+	    Integer yOffset = 190\+i*15;
+	    Integer xOffset = 30\+(101\-'displayLines.get(i)'.length())*5/2;
+	    conditionBody.add(|"g".drawString('' 'displayLines.get(i)' '', 'xOffset','yOffset'\-"yOffset"); |);
+	    i \+= 1;
+	  }
+	  Integer conditionYOffset = (displayLineIndexEndValue\-displayLineIndexStartValue\+2)\*15;
+	  if conditionStatement != null {
+	    completeDisplayBody.add(|if `conditionStatement` `conditionBody` else {
+	        yOffset \+= 'conditionYOffset';
+	      }|);
+	  }
+	  else {
+	    completeDisplayBody.add(conditionBody);
+	  }
+	  Integer xOffset = 30;
+	  Integer yOffset = 170\+displayLineIndexStartValue*15;
+	  Integer cWidth =  600\-30\-30;
+	  Integer cHeight = (i\-displayLineIndexEndValue\+1)*15;
+	  
+	  completeDisplayBody.add(|
+	    if "selected" == States->'stateClassName'->Transition->Id->'choiceEnum' {
+	      "g".drawRoundRect('xOffset', 'yOffset'\-"yOffset", 'cWidth', 'cHeight',10,15);
+	    }|);
+	  
+	  Integer mxOffset = 30;
+	  Integer myOffset = 170\+(displayLineIndexStartValue)*15;
+	  Integer xMax = mxOffset\+cWidth;
+	  Integer yMax = myOffset\+cHeight;
+	  if conditionStatement != null {
+	    States->'stateClassName'->*"mouseHover".appendToBody({
+	      if `conditionStatement` {
+	      if "x" >= 'mxOffset' && "x" <= 'xMax' && "y" >= 'myOffset'\-"yOffset" && "y" <= 'yMax'\-"yOffset" {
+	        "selected" = States->'stateClassName'->Transition->Id->'choiceEnum';
+	        Gui.refresh();
+	      }
+	      }
+	      else {
+	        "yOffset" \+= 'conditionYOffset';
+	      }});
+	  }
+	  else {
+	    States->'stateClassName'->*"mouseHover".appendToBody({
+	      if "x" >= 'mxOffset' && "x" <= 'xMax' && "y" >= 'myOffset'\-"yOffset" && "y" <= 'yMax'\-"yOffset" {
+	        "selected" = States->'stateClassName'->Transition->Id->'choiceEnum';
+	        Gui.refresh();
+	      }});
+	  }
+    }
+    States->'stateClassName'->*"display".appendToBody(completeDisplayBody);
+  }
+> Integer handleLines(String input, List<String> displayLines, Integer displayLineIndexValue){
+    ~Integer displayLineIndex = displayLineIndexValue;
+    displayLineIndex \+= 1;
+	Integer displayLineIndexStartValue = displayLineIndex;
+	~StringBuilder currentLine = new StringBuilder();
+	~StringBuilder currentWord = new StringBuilder();
+	~Integer currentLineCount = 0;
+	for int i < input.length() {
+	  char c = input.charAt(i); 
+	  if (""\+c).\matches("[a-zA-Z0-9]") {
+	    currentWord.append(c);
+	  }
+	  else {
+	    ~boolean justLined = false;
+	    if currentLineCount\+'currentWord'.length() > 100 {
+	      displayLineIndex \+= 1;
+	      displayLines.add('currentLine');
+	      currentLine = new StringBuilder();
+	      currentLineCount = 0;
+	      justLined = true;
+	    }
+        if currentLineCount != 0 || 'currentWord'.length() != 0 || (""\+c).\matches("[ \\t]") == false {         
+	      currentLine.append('currentWord');
+	      if (""\+c).\equals("\n"){
+	        if justLined == false {
+	          displayLineIndex \+= 1;
+	          displayLines.add('currentLine');
+	          currentLine = new StringBuilder();
+	          currentLineCount = 0;
+	        }
+	      }
+	      else {
+	        currentLine.append(c);
+	        currentLineCount \+= 'currentWord'.length()\+1;
+	      }
+	      currentWord = new StringBuilder();
+	    }
+	  }
+	}
+	if currentLineCount\+'currentWord'.length() > 100 {
+	  displayLineIndex \+= 1;
+	  displayLines.add('currentLine');
+	  currentLine = new StringBuilder();
+	}
+	currentLine.append('currentWord');
+	displayLines.add('currentLine');
+	return displayLineIndex;
+  }
+}
+class 'packageName'."states" State {
+
+> ~Integer stateVersionId = 0;
+  interface Acceptor // {
+    void load(DataReader reader, State->Acceptor acceptor ) throws IO, ClassNotFound{}
+    void accept(State->Data->Variables variable, Object toSet){}
+  }
+  class 'packageName'."states" Data Object State->Acceptor {
+    enum Variables // {}
+    class EmptyFile //State->Acceptor {
+      void load(DataReader reader, State->Acceptor acceptor ) {
+        State.data = (State->Data)acceptor;
+        Game.currentState.enter();
+      }
+      void accept(State->Data->Variables variable, Object toSet){
+	  }
+      void save(DataWriter writer) throws IO{
+        writer.writeVersion(`\getVersionId()`);
+        writer.writeState();
+      }
+    }
+    class OldVersion // {
+      @Map<Integer, State\>Acceptor> map = new HashMap<Integer, State\>Acceptor>();
+      @boolean hasSetup = false;
+      @void setup(){
+        if hasSetup {
+          return void;
+        }
+	    hasSetup = true;
+      }
+    }
+    void write(String saveFile){
+      DataWriter writer = new DataWriter(saveFile);
+      try {
+        \save(writer);
+      }
+      print catch IO {}
+      writer.close();
+    }
+    void read(String saveFile){
+      DataReader reader = new DataReader(saveFile);
+      try {
+        try {
+          \load(reader, this);
+        }
+        print catch ClassNotFound {}
+      }
+      print catch IO {}
+      reader.close();
+    }
+    void save(DataWriter writer) throws IO{
+      writer.writeVersion(`\getVersionId()`);
+      writer.writeState();
+    }
+    void load(DataReader reader, State->Acceptor acceptor ) throws IO, ClassNotFound{
+      State->Acceptor correctState = reader.correctStateFromVersion(this); 
+      if correctState != this {
+        correctState.load(reader, this);
+        return void;
+      }
+      Game.currentState = reader.readState();
+    }
+    > Body acceptSwitchBody = new Body ();
+    void accept(State->Data->Variables variable, Object toSet){
+      switch variable `acceptSwitchBody`
+    }
+    @void loadFile(String fileName){
+      State->Data data = new State->Data();
+      data.read( fileName );
+      State.data = data;
+    }
+    > void output(){
+      ~Integer newVersion = 7;
+      for String key:\variables.keySet() {
+        newVersion += key.hashCode();
+        StringBuilder typeBuilder = new StringBuilder();
+        \variables.get(key).getType().get(typeBuilder);
+        newVersion += 'typeBuilder'.hashCode();
+      }
+      newVersion *= \variables.keySet().size();
+      newVersion *= stateVersionId;
+      try {
+        Set<Integer> oldVersions = new HashSet<Integer>();
+        DataInputStream inStream = new DataInputStream(new FileInputStream("../Resource/old.versions"));
+        try {
+        ~Integer nextId = inStream.readInt();
+        while nextId != -1 {
+          oldVersions.add(nextId);
+          nextId = inStream.readInt();
+        }
+        }
+        catch EOF {}
+        inStream.close();
+        \setVersionId(newVersion);
+        if oldVersions.add(newVersion){
+          DataOutputStream outStream = new DataOutputStream(new FileOutputStream("../Resource/old.versions"));
+          for Integer v : oldVersions {
+            outStream.writeInt(v);
+          }
+          outStream.close();
+          String newDataClassName;
+          if newVersion < 0 {
+            newDataClassName = "DataNeg"\+(-1*version.getId());
+          }
+          else {
+            newDataClassName = "Data"\+version.getId();
+          }
+          class 'packageName'."old"."data" newDataClassName Object State->Acceptor {
+            void accept(State->Data->Variables variable, Object toSet){}
+          }
+          \newDataClassNameClass.addMethod(\methods.get("load[DataReader,State.Acceptor]"));
+          \newDataClassNameClass.setDisplayConstructors(false);
+        }
+        for Integer oldVersionId : oldVersions {
+          String oldDataClassName;
+          if oldVersionId < 0 {
+            oldDataClassName = "DataNeg"\+(-1*oldVersionId);
+          }
+          else {
+            oldDataClassName = "Data"\+oldVersionId;
+          }
+          ExternalImportEntry.solidPackages.put(oldDataClassName, 'packageName'\+".old.data");
+          State->Data.addImport(new ExternalImportEntry.ImportEntry(new StringEntry(oldDataClassName)));
+          State->Data->OldVersion->*"setup".appendToBody({
+              State->Data->OldVersion.map.put('oldVersionId', new 'oldDataClassName'());
+            });
+        }
+      }
+      print catch *{}
+    }
+  }
+  @State->Data data = null;
+  int getId(){
+    return -1;
+  }
+  void enter(){
+  }
+  void exit(){
+  }
+  void display(GraphicsHandler g){
+  }
+  void mouseRelease(int x, int y){
+  }
+  void mousePress(int x, int y){
+  }
+  void mouseHover(int x, int y){
+  }
+  void keyPress(int keyCode){
+  }
+}

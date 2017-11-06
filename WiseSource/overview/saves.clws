@@ -1,0 +1,125 @@
+< DataOutputStream : \java.\io;
+< DataInputStream  : \java.\io;
+< ObjectOutputStream : \java.\io;
+< FileOutputStream : \java.\io;
+< ObjectInputStream  : \java.\io;
+< FileInputStream  : \java.\io;
+class 'packageName'."misc" DataWriter {
+  ObjectOutputStream stream = null;
+  DataWriter *(String fileName){
+    try {
+      stream = new ObjectOutputStream(new FileOutputStream(fileName));
+    }
+    print catch *{}
+  }
+  void close(){
+    try {
+      if stream != null {
+        stream.close();
+      }
+    }
+    print catch IO {}
+  }
+  void writeVersion(int version) throws IO{
+    stream.writeInt(version);
+  }
+  void writeAsBoolean(boolean input) throws IO {
+    stream.writeBoolean(input);
+  }
+  void writeState() throws IO {
+    if Game.currentState != null {
+      stream.writeInt(Game.currentState.getId());
+    }
+    else {
+      stream.writeInt(-1);
+    }
+  }
+  void write(Object input) throws IO{
+    stream.writeObject(input);
+  }
+}
+class 'packageName'."misc" DataReader {
+  ObjectInputStream stream = null;
+  DataReader *(String fileName){
+    try {
+      try {
+        stream = new ObjectInputStream(new FileInputStream(fileName));
+      }
+      catch EOF {
+        readVersion = -1;
+      }
+    }
+    print catch *{}
+  }
+  void close(){
+    try {
+      if stream != null {
+        stream.close();
+      }
+    }
+    print catch IO {}
+  }
+  ~Integer readVersion = null;
+  State->Acceptor correctStateFromVersion(State->Acceptor currentData) throws IO {
+    if readVersion == null {
+      try {
+        readVersion = stream.readInt();
+      }
+      catch EOF {
+        return new State->Data->EmptyFile();
+      }
+    }
+    if readVersion == -1 {
+      return new State->Data->EmptyFile();
+    }
+    else if readVersion == `\getVersionId()` {
+      return currentData;
+    }
+    else {
+      State->Data->OldVersion.setup();
+      if State->Data->OldVersion.map.containsKey(readVersion) {
+        return State->Data->OldVersion.map.get(readVersion);
+      }
+      else {
+        return currentData;
+      }
+    }
+  }
+  Boolean readAsBoolean() throws IO {
+    return stream.readBoolean();
+  }
+  State readState() throws IO {
+    return States.create(stream.readInt());
+  }
+  Object read() throws IO, ClassNotFound {
+    return stream.readObject();
+  }
+}
+
+< Runnable : \java.\lang;
+class 'packageName'."misc" SaveThread Object Runnable {
+  String fileName = null;
+  ~boolean isWaiting = false;
+  void run(){
+    while Game.running {
+      try {
+        synchronized this {
+          isWaiting = true;
+          \wait(1000);
+          isWaiting = false;
+        }
+        if State.data != null {
+          State.data.write(fileName);
+        }
+      }
+      print catch *{}
+    }
+  }
+  void end(){
+    if isWaiting {
+      synchronized this {
+        \notifyAll();
+      }
+    }
+  }
+}
