@@ -15,6 +15,7 @@ public class SpecialDescriptor extends ConcreteRule {
 	}
 	@Override
 	public void setup(){
+		isSilent(true);
 		set(
 			new ChoiceParser(
 					new AddTokenParser(

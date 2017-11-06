@@ -22,6 +22,12 @@ public class BodyElement extends ConcreteRule {
 					Rules.while_statement,
 					Rules.for_statement,
 					Rules.variable_declaration,
+					new AddTokenParser(
+						
+						new ChainParser(
+							Rules.variable_call,
+							GeneralTokens.EQUALSIGN,
+							Rules.statement),"assignment"),
 					Rules.statement));
 
 	}

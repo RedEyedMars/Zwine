@@ -47,14 +47,8 @@ class 'packageName'."states" States {
         void exit(){
         }
         void display(GraphicsHandler g){
-          int yOffset = 0;
-        }
-        
-        void mouseRelease(int x, int y){
-          int yOffset = 0;
-        }
-        void mouseHover(int x, int y){
-          int yOffset = 0;
+          g.clear();
+          mice.clear();
         }
         int getId(){
           return 'stateIdValue';
@@ -62,6 +56,8 @@ class 'packageName'."states" States {
       }
     
     stateId \+= 1;
+    States->'stateClassName' += class Actions // {
+      }
     States->'stateClassName' += class Transition // {
       }
     States->'stateClassName'->Transition += enum Id // {
@@ -75,7 +71,8 @@ class 'packageName'."states" States {
 	List<String> choiceEnumLines = new ArrayList<String > ();
 	List<Statement > conditionStatements = new ArrayList<Statement > ();
 	~String firstChoiceEnum = null;
-	Body completeDisplayBody = new Body ();
+	Body choicesDisplayBody = new Body ();
+	Body descriptionDisplayBody = new Body ();
     definition : element : stateChange {
       Body changeBody = new Body ();
       ~Integer currentIndex = 0;
@@ -210,35 +207,62 @@ class 'packageName'."states" States {
         firstStateAdded = true;
 	  }
 	  else {
+	    
 	    Body transitionBody = new Body ();
 	    StringBuilder choiceEnum = new StringBuilder();
 	    StringBuilder choiceNameBuilder = new StringBuilder();
+	    Statement conditionStatement;
+	    if element->"boolean_statement" != null{
+	      conditionStatement = \getStateBooleanStatement(element->"boolean_statement",context);
+	    }
+	    else {
+	      conditionStatement = null;
+	    }
+	    Body conditionBody = new Body ();
+	    
+        conditionBody.add(|"g".sectionStart();|);
+        conditionBody.add(|"g".newline();|);
 	    element : atom : choiceName {
           atom : quark : descriptor {
             if quark->"special_descriptor" == null {
               choiceNameBuilder.append(" ");
               choiceNameBuilder.append('quark');
+	          conditionBody.add(|"g".text('' " "+'quark' '');|);
             }
             else {
               quark : quanta : special_descriptor {
+                ~boolean hasCharacter = false;
                 quanta : string : newline {
                   choiceNameBuilder.append("\n");
+                  conditionBody.add(|"g".newline();|);
+                  hasCharacter = true;
                 }
                 : statement {
                   choiceNameBuilder.append(" \"+");
                   Statement statement = \getStateStatement(string,context);
                   statement.get(choiceNameBuilder);
                   choiceNameBuilder.append("+\"");
+                  conditionBody.add(|"g".text(''" "''\+`statement` );|);
+                  hasCharacter = true;
+                }
+                : COLON {
+                  choiceNameBuilder.append(":");
+                  conditionBody.add(|"g".text('' ":" '');|);
+                  hasCharacter = true;
+                }
+                if hasCharacter == false {
+                  choiceNameBuilder.append("/");
+                  conditionBody.add(|"g".text('' "/" '');|);
                 }
               }
             }
           }
         }
-	    String choiceName = 'choiceNameBuilder';
+        String choiceName = 'choiceNameBuilder';
 	    if choiceName.matches("\\s*") {
 	      return void;
 	    }
-	    ~boolean doom = false;
+        ~boolean doom = false;
 	    for char c: choiceName.toCharArray() {
 	      if doom == false {
 	        if (""\+c).\matches("[a-zA-Z0-9 \\t]") {
@@ -253,6 +277,27 @@ class 'packageName'."states" States {
 	    }
 	    choiceEnum.append(choiceNameLines.size());
 	    
+        String choiceEnumClass = 'choiceEnum';
+        States->'stateClassName'->Actions += class choiceEnumClass // {
+          }
+        States->'stateClassName'->Actions->'choiceEnumClass' += class Chose /MouseHandler->Action/ {
+            States->'stateClassName' state = null;
+            void act(){
+              Game.transition(state.transition(States->'stateClassName'->Transition->\Id->'choiceEnum'));
+            }
+          }
+        
+        conditionBody.add(|"g".newline();|);
+        conditionBody.add(|"mice".add("g".sectionEnd(new States->'stateClassName'->Actions->'choiceEnum'->Chose(this),null,null));|);
+	    
+        if conditionStatement != null {
+          choicesDisplayBody.add(|if `conditionStatement` `conditionBody`|);
+        }
+        else {
+          choicesDisplayBody.add(conditionBody);
+        }
+	    
+	    
 	    if firstChoiceEnum == null {
 	      firstChoiceEnum = 'choiceEnum';
 	    }
@@ -265,125 +310,63 @@ class 'packageName'."states" States {
 	    choiceNameLines.add(choiceName);
 	    choiceEnumLines.add('choiceEnum');
 	    States->'stateClassName'->Transition->\Id += void 'choiceEnum' = null
-	    if element->"boolean_statement" != null{
-	      conditionStatements.add(\getStateBooleanStatement(element->"boolean_statement",context));
-	    }
-	    else {
-	      conditionStatements.add(null);
-	    }
 	  }
     }
     definition : element : stateDescription {
       StringBuilder linesBuilder = new StringBuilder();
       Context context = State->Data.getContext();
-      element : atom : descriptionLine {
+      Statement conditionStatement;
+	  if element->"boolean_statement" != null{
+	    conditionStatement = \getStateBooleanStatement(element->"boolean_statement",context);
+	  }
+	  else {
+	    conditionStatement = null;
+	  }
+	  Body conditionBody = new Body ();
+	  element : atom : descriptionLine {
         atom : quark : descriptor {
           if quark->"special_descriptor" == null {
-            linesBuilder.append(" ");
-            linesBuilder.append('quark');
+	        conditionBody.add(|"g".text('' " "+'quark' '');|);
           }
           else {
             quark : quanta : special_descriptor {
+              ~boolean hasCharacter = false;
               quanta : string : newline {
-                linesBuilder.append("\n");
+                conditionBody.add(|"g".newline();|);
+                hasCharacter = true;
               }
               : statement {
-                linesBuilder.append(" \"+");
                 Statement statement = \getStateStatement(string,context);
-                statement.get(linesBuilder);
-                linesBuilder.append("+\"");
+                conditionBody.add(|"g".text(''" "''\+`statement` );|);
+                hasCharacter = true;
+              }
+              : COLON {
+                conditionBody.add(|"g".text('' ":" '');|);
+                hasCharacter = true;
+              }
+              if hasCharacter == false {
+                conditionBody.add(|"g".text('' "/" '');|);
               }
             }
           }
         }
       }
-      Integer displayLineIndexStartValue = displayLineIndex\+1;
-	  displayLineIndex = \handleLines('linesBuilder', displayLines, displayLineIndex);
-	  Integer displayLineIndexEndValue = displayLineIndex;
-      ~Integer i =  displayLineIndexStartValue;
-	  while i <= displayLineIndexEndValue {
-	    Integer yOffset = 205\+i*15;
-	    Integer xOffset = 30;
-	    States->'stateClassName'->*"display".appendToBody({
-	       "g".drawString('' 'displayLines.get(i)' '', 'xOffset','yOffset');
-	      });
-	    i \+= 1;
-	  }
+      if conditionStatement != null {
+        descriptionDisplayBody.add(|if `conditionStatement` `conditionBody`|);
+      }
+      else {
+        descriptionDisplayBody.add(conditionBody);
+      }
     }
     if firstChoiceEnum != null {
       firstSelectedAdded = true;
       String firstChoiceEnumValue = firstChoiceEnum;
 	  States->'stateClassName' += States->'stateClassName'->Transition->Id selected = null
-	  States->'stateClassName'->*"mouseRelease".appendToBody({
-	    \mouseHover("x","y");
-        Game.transition(\transition("selected"));
-        });
 	  displayLineIndex \+= 1;
 	  displayLines.add("");
     }
-    for Integer choiceIndex < choiceNameLines.size() {
-	  displayLineIndex \+= 1;
-	  displayLines.add("");
-      String choiceName = choiceNameLines.get(choiceIndex);
-      String choiceEnum = choiceEnumLines.get(choiceIndex);
-      Statement conditionStatement = conditionStatements.get(choiceIndex);
-      Integer displayLineIndexStartValue = displayLineIndex\+1;
-	  displayLineIndex = \handleLines(choiceName, displayLines, displayLineIndex);
-	  Integer displayLineIndexEndValue = displayLineIndex;
-	   
-	   
-	  Body conditionBody = new Body ();
-	  ~Integer i =  displayLineIndexStartValue;
-	  while i <= displayLineIndexEndValue {
-	    Integer yOffset = 190\+i*15;
-	    Integer xOffset = 30\+(101\-'displayLines.get(i)'.length())*5/2;
-	    conditionBody.add(|"g".drawString('' 'displayLines.get(i)' '', 'xOffset','yOffset'\-"yOffset"); |);
-	    i \+= 1;
-	  }
-	  Integer conditionYOffset = (displayLineIndexEndValue\-displayLineIndexStartValue\+2)\*15;
-	  if conditionStatement != null {
-	    completeDisplayBody.add(|if `conditionStatement` `conditionBody` else {
-	        yOffset \+= 'conditionYOffset';
-	      }|);
-	  }
-	  else {
-	    completeDisplayBody.add(conditionBody);
-	  }
-	  Integer xOffset = 30;
-	  Integer yOffset = 170\+displayLineIndexStartValue*15;
-	  Integer cWidth =  600\-30\-30;
-	  Integer cHeight = (i\-displayLineIndexEndValue\+1)*15;
-	  
-	  completeDisplayBody.add(|
-	    if "selected" == States->'stateClassName'->Transition->Id->'choiceEnum' {
-	      "g".drawRoundRect('xOffset', 'yOffset'\-"yOffset", 'cWidth', 'cHeight',10,15);
-	    }|);
-	  
-	  Integer mxOffset = 30;
-	  Integer myOffset = 170\+(displayLineIndexStartValue)*15;
-	  Integer xMax = mxOffset\+cWidth;
-	  Integer yMax = myOffset\+cHeight;
-	  if conditionStatement != null {
-	    States->'stateClassName'->*"mouseHover".appendToBody({
-	      if `conditionStatement` {
-	      if "x" >= 'mxOffset' && "x" <= 'xMax' && "y" >= 'myOffset'\-"yOffset" && "y" <= 'yMax'\-"yOffset" {
-	        "selected" = States->'stateClassName'->Transition->Id->'choiceEnum';
-	        Gui.refresh();
-	      }
-	      }
-	      else {
-	        "yOffset" \+= 'conditionYOffset';
-	      }});
-	  }
-	  else {
-	    States->'stateClassName'->*"mouseHover".appendToBody({
-	      if "x" >= 'mxOffset' && "x" <= 'xMax' && "y" >= 'myOffset'\-"yOffset" && "y" <= 'yMax'\-"yOffset" {
-	        "selected" = States->'stateClassName'->Transition->Id->'choiceEnum';
-	        Gui.refresh();
-	      }});
-	  }
-    }
-    States->'stateClassName'->*"display".appendToBody(completeDisplayBody);
+    States->'stateClassName'->*"display".appendToBody(descriptionDisplayBody);
+    States->'stateClassName'->*"display".appendToBody(choicesDisplayBody);
   }
 > Integer handleLines(String input, List<String> displayLines, Integer displayLineIndexValue){
     ~Integer displayLineIndex = displayLineIndexValue;
@@ -566,6 +549,7 @@ class 'packageName'."states" State {
     }
   }
   @State->Data data = null;
+  ~List<MouseHandler> mice = new ArrayList<MouseHandler>(); 
   int getId(){
     return -1;
   }
@@ -576,10 +560,19 @@ class 'packageName'."states" State {
   void display(GraphicsHandler g){
   }
   void mouseRelease(int x, int y){
+    for MouseHandler mouse:mice {
+      mouse.release(x,y);
+    }
   }
   void mousePress(int x, int y){
+    for MouseHandler mouse:mice {
+      mouse.press(x,y);
+    }
   }
   void mouseHover(int x, int y){
+    for MouseHandler mouse:mice {
+      mouse.hover(x,y);
+    }
   }
   void keyPress(int keyCode){
   }

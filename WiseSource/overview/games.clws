@@ -1,3 +1,5 @@
+
+
 > String mainStringArgs = "String[]";
 < MouseMotionListener : \java.\awt.\event;
 < MouseListener : \java.\awt.\event;
@@ -9,9 +11,10 @@ class 'packageName'."game" Game JPanel MouseListener KeyListener  MouseMotionLis
   @String loadFileName = '' "./res/saves/auto.save" '';
   @String saveFileName = '' "./res/saves/auto.save" '';
   ~Gui gui = null;
+  @GraphicsHandler handler = null;
   ~Double lastTick = \System.currentTimeMillis()/1000.0;
   ~Double thisTick = lastTick;
-  boolean[] pressedKeys = new boolean[128];
+  ~boolean[] pressedKeys = new boolean[128];
   @void main(String[] args){
     for String arg: args {
       if arg.startsWith(''"-s"'') {
@@ -37,6 +40,7 @@ class 'packageName'."game" Game JPanel MouseListener KeyListener  MouseMotionLis
 	gui.addKeyListener(this);
 	gui.addMouseListener(this);
 	gui.addMouseMotionListener(this);
+	Game.handler = new GraphicsHandler(30,210,540,180);
 	if Game.loadFileName != null {
 	  State->Data.loadFile(Game.loadFileName);
 	}
@@ -44,6 +48,7 @@ class 'packageName'."game" Game JPanel MouseListener KeyListener  MouseMotionLis
 	  State.data = new State->Data();
 	  "currentState".enter();
 	}
+    "currentState".display(handler);
   }
   void keyReleased(KeyEvent event) {
     if event.getKeyCode() == 27 {
@@ -86,9 +91,7 @@ class 'packageName'."game" Game JPanel MouseListener KeyListener  MouseMotionLis
     g.setColor(Color.black);
     g.drawImage(Gui.textBackground,10,180,null);
     if "currentState" != null {
-      GraphicsHandler handler = new GraphicsHandler(g);
-      "currentState".display(handler);
-      handler.display();
+      handler.display(g);
     }
   }
   void update(){
@@ -97,6 +100,7 @@ class 'packageName'."game" Game JPanel MouseListener KeyListener  MouseMotionLis
   }
   @void transition(State newState){
     Game.currentState = newState;
+    Game.currentState.display(handler);
     Gui.refresh();
   }
 }

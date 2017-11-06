@@ -28,7 +28,8 @@ public class StateTokens extends ParseList {
 	public static final RegexParser NON_SPACE = new RegexParser("NON_SPACE","stateTokens","[^\\s]+");
 	public static final RegexParser NON_SPACE_OR_SQUARE = new RegexParser("NON_SPACE_OR_SQUARE","stateTokens","[^\\s\\[\\]]+");
 	public static final ExactParser NNN = new ExactParser("NNN","stateTokens","n");
+	public static final ExactParser BACKSLASH = new ExactParser("BACKSLASH","stateTokens","\\");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				TOOL_TIP,NEWTLINE,TAB,SEMICOLON,ENTER,EXIT,STATES,TRANSITION_ARROW,STATE_NAME,SPACE,NON_SPACE,NON_SPACE_OR_SQUARE,NNN);
+				TOOL_TIP,NEWTLINE,TAB,SEMICOLON,ENTER,EXIT,STATES,TRANSITION_ARROW,STATE_NAME,SPACE,NON_SPACE,NON_SPACE_OR_SQUARE,NNN,BACKSLASH);
 }

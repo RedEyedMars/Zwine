@@ -55,6 +55,7 @@ import com.rem.parser.generation.classwise.ExternalImportEntry;
 import com.rem.parser.generation.StringEntry;
 import java.io.Serializable;
 import java.util.Random;
+import java.awt.Font;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.MouseMotionListener;
@@ -74,17 +75,11 @@ public class MainFlow extends FlowController  {
 	public static class classes {
 		public static final States StatesClass = new States();
 		public static final State StateClass = new State();
-		public static final Listener ListenerClass = new Listener();
+		public static final Range RangeClass = new Range();
 		public static final Events EventsClass = new Events();
 		public static final Event EventClass = new Event();
-		public static final Listenable ListenableClass = new Listenable();
-		public static final Source SourceClass = new Source();
-		public static final Loaddable LoaddableClass = new Loaddable();
-		public static final Tickable TickableClass = new Tickable();
-		public static final Range RangeClass = new Range();
-		public static final ListMaps ListMapsClass = new ListMaps();
-		public static final Criteria CriteriaClass = new Criteria();
-		public static final Factory FactoryClass = new Factory();
+		public static final GraphicsHandler GraphicsHandlerClass = new GraphicsHandler();
+		public static final MouseHandler MouseHandlerClass = new MouseHandler();
 		public static final Gui GuiClass = new Gui();
 		public static final Game GameClass = new Game();
 		public static final DataWriter DataWriterClass = new DataWriter();
@@ -104,10 +99,6 @@ public class MainFlow extends FlowController  {
 	protected final RegexParser __VAR__lazyNameParser = GeneralTokens.NAME;
 	protected final Map<String,List<String>> __VAR__classIdentifierMap = new HashMap<String,List<String>>();
 	protected final Map<String,List<String>> __VAR__classIdentifierClassMap = new HashMap<String,List<String>>();
-	protected final Set<String> __VAR__declaredCritSet = new HashSet<String>();
-	protected final Set<String> __VAR__declaredListSet = new HashSet<String>();
-	protected final Set<String> __VAR__declaredMapSet = new HashSet<String>();
-	protected final String __VAR__TT = "<T>T";
 	protected final String __VAR__mainStringArgs = "String[]";
 	protected final VersionIdentifier __VAR__version = new VersionIdentifier();
 	protected final Classes __VAR__classHandler = new Classes();
@@ -620,6 +611,10 @@ acceptingClass.addMethod(new ExternalMethodEntry(1, false,/*TypeName*/new Extern
 			if(__element__KEY.getName().equals("variable_declaration")){ final IToken element = elementToken.get(__element__KEY);
 				return MainFlow.methods.getVariableDeclaration(element,context);
 			}
+			if(__element__KEY.getName().equals("assignment")){ final IToken element = elementToken.get(__element__KEY);
+				return /*InCl*/new ExternalStatement(
+		/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement(null,new StringEntry(")"),"(",/*InCl*/new ExternalStatement(MainFlow.methods.getSetVariableCall(element.get("variable_call"),context)),new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(MainFlow.methods.getStatement(element.get("statement"),context)))))))));
+			}
 			if(__element__KEY.getName().equals("if_statement")){ final IToken element = elementToken.get(__element__KEY);
 				return MainFlow.methods.getIfStatement(element,context);
 			}
@@ -882,6 +877,115 @@ inputClass.addVariable(new ExternalVariableEntry(false, /*TypeName*/new External
 		}
 		return ret;
 	}
+	public ExternalStatement getSetVariableCall(final IToken variableCallToken,final ExternalContext context)  {
+		ExternalContext currentContext = context;
+		final ExternalStatement ret = new ExternalStatement(".");
+		Integer callCount = -1;
+		for(IToken.Key __element__KEY:variableCallToken.keySet()) {
+			if(__element__KEY.getName().equals("range")){ final IToken element = variableCallToken.get(__element__KEY);
+				callCount += 1;
+			}
+			if(__element__KEY.getName().equals("braced")){ final IToken element = variableCallToken.get(__element__KEY);
+				callCount += 1;
+			}
+			if(__element__KEY.getName().equals("exact")){ final IToken element = variableCallToken.get(__element__KEY);
+				callCount += 1;
+			}
+			if(__element__KEY.getName().equals("quote")){ final IToken element = variableCallToken.get(__element__KEY);
+				callCount += 1;
+			}
+			if(__element__KEY.getName().equals("cast")){ final IToken element = variableCallToken.get(__element__KEY);
+				callCount += 1;
+			}
+			if(__element__KEY.getName().equals("variableName")){ final IToken element = variableCallToken.get(__element__KEY);
+				callCount += 1;
+			}
+			if(__element__KEY.getName().equals("method")){ final IToken element = variableCallToken.get(__element__KEY);
+				callCount += 1;
+			}
+		}
+		for(IToken.Key __element__KEY:variableCallToken.keySet()) {
+			if(__element__KEY.getName().equals("range")){ final IToken element = variableCallToken.get(__element__KEY);
+				ret.add(/*Name*/new ExternalStatement(/*NObj*/new ExternalStatement.NewObject(/*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry("Range"))),new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(element.get("left").toString())))),/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(element.get("right").toString()))))))));
+			}
+			if(__element__KEY.getName().equals("braced")){ final IToken element = variableCallToken.get(__element__KEY);
+				final ExternalStatement subStatement = MainFlow.methods.getStatement(element,context);
+				subStatement.brace();
+				ret.add(subStatement);
+			}
+			if(__element__KEY.getName().equals("exact")){ final IToken element = variableCallToken.get(__element__KEY);
+				if (element.get("FLOAT") != null) {
+				ret.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(/*Concat*/new ExternalStatement("", /*Enty*/new ExternalStatement(new StringEntry(element.toString())), /*Name*/new ExternalStatement(new StringEntry("f")))))));
+				}
+				else  {
+				ret.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(element.toString())))));
+				}
+			}
+			if(__element__KEY.getName().equals("quote")){ final IToken element = variableCallToken.get(__element__KEY);
+				ret.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Quot*/new ExternalStatement(new QuoteEntry(element.toString())))));
+			}
+			if(__element__KEY.getName().equals("cast")){ final IToken element = variableCallToken.get(__element__KEY);
+				final String typeName = MainFlow.methods.getTypeName(element.get("type_name"));
+				final ExternalContext typeContext = currentContext.getClassContext(typeName);
+				if (typeContext == null) {
+				throw new RuntimeException("Could not find "+typeName.toString()+" type in context!");
+				}
+				final ExternalStatement castStatement = new ExternalStatement();
+				castStatement.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(/*Enty*/new ExternalStatement(new StringEntry(typeName.toString())))))));
+				castStatement.brace();
+				final ExternalStatement fullStatement = new ExternalStatement();
+				fullStatement.add(castStatement);
+				fullStatement.add(MainFlow.methods.getStatement(element.get("statement"),context));
+				ret.add(fullStatement);
+			}
+			if(__element__KEY.getName().equals("variableName")){ final IToken element = variableCallToken.get(__element__KEY);
+				currentContext = currentContext.link(element.toString());
+				if (currentContext == null) {
+				throw new RuntimeException("Could not find "+element.toString()+" variable in context!");
+				}
+				if (ret.size() == callCount) {
+				ret.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry("set"+FlowController.camelize(element.toString()).toString())))));
+				}
+				else if (ret.size() == 0 ) {
+				ret.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(element.toString())))));
+				}
+				else  {
+				ret.add(/*Name*/new ExternalStatement(/*Call*/new ExternalStatement(null,new StringEntry(")"),"(",/*Enty*/new ExternalStatement(new StringEntry("get"+FlowController.camelize(element.toString()).toString())),new ExternalStatement.Parameters())));
+				}
+			}
+			if(__element__KEY.getName().equals("method")){ final IToken element = variableCallToken.get(__element__KEY);
+				final String methodName;
+				if (element.get("methodName") != null) {
+				methodName = element.get("methodName").toString();
+				}
+				else  {
+				methodName = MainFlow.methods.getTypeName(element.get("type_name"));
+				}
+				final ExternalStatement.Parameters parameters = new ExternalStatement.Parameters();
+				for(final IToken atom:element.getAllSafely("statement")) {
+					parameters.add(MainFlow.methods.getStatement(atom,context));
+				}
+				if (element.get("NEW") != null) {
+				currentContext = currentContext.getClassContext(methodName);
+				if (currentContext == null) {
+					throw new RuntimeException("Could not find \"+methodName+\" type in context!");
+				}
+				ret.add(/*Name*/new ExternalStatement(/*NObj*/new ExternalStatement.NewObject(/*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(/*Enty*/new ExternalStatement(new StringEntry(methodName.toString())))),new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(parameters)))))));
+				}
+				else  {
+				currentContext = currentContext.link(methodName);
+				if (currentContext == null) {
+					throw new RuntimeException("Could not find "+element.toString()+" method in context!");
+				}
+				ret.add(/*Name*/new ExternalStatement(/*Call*/new ExternalStatement(null,new StringEntry(")"),"(",/*Enty*/new ExternalStatement(new StringEntry(element.toString())),new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(parameters)))))));
+				}
+			}
+		}
+		if (currentContext != null && currentContext.hasEnder()) {
+			ret.add(currentContext.getEnder());
+		}
+		return ret;
+	}
 	public ExternalStatement primeRange(final IToken rangeToken)  {
 		String left = rangeToken.get("left").toString();
 		String right = rangeToken.get("right").toString();
@@ -897,278 +1001,6 @@ inputClass.addVariable(new ExternalVariableEntry(false, /*TypeName*/new External
 			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("Math"))), /*Enty*/new ExternalStatement(new StringEntry("random"))),
 			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
 			 		new ExternalStatement.Parameters()))), /*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(value.toString()))));
-	}
-	public void createList(final ExternalClassEntry listClass)  {
-		final String listName = listClass.getFullName() + "List";
-		if (MainFlow.variables.get_declaredListSet().add(listName)) {
-listClass.addSubClass(new ExternalClassEntry(){public void __INIT__(){super.__SETUP__(null, 
-		new Entry(){
-			public void get(StringBuilder __BUILDER__){
-			}
-		},new StringEntry("List"), "class ", /*TypeName*/new ExternalStatement.TypeName(new StringEntry("ArrayList"), new ExternalStatement(new StringEntry("<"), new StringEntry(">"), ",", /*TypeName*/new ExternalStatement.TypeName(new StringEntry(listClass.getFullName())))), new ArrayList<Entry>(Arrays.asList(new Entry[]{})), 
-		new Entry(){
-		public void get(StringBuilder builder){
-			builder.append("static class ");
-			new StringEntry("List").get(builder);
-			new StringEntry("").get(builder);
-		}
-	}, Arrays.asList(new ExternalVariableEntry[]{}), Arrays.asList(new ExternalMethodEntry[]{new ExternalMethodEntry(1, false,/*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry("List"))),"", /*Exac*/new ExternalStatement(new StringEntry("*")), /*Parameters*/Arrays.asList(new ExternalVariableEntry[]{new ExternalVariableEntry(false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry(listClass.getFullName()))),"", new ExternalStatement(new StringEntry("..."), /*Name*/new ExternalStatement(new StringEntry("elements"))))}), "", /*Body*/new ExternalStatement.Body(
-		/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement(null,new StringEntry(")"),"(",/*Name*/new ExternalStatement(new StringEntry("super")),new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
-			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry("Arrays")))), /*Enty*/new ExternalStatement(new StringEntry("asList"))),
-			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("elements"))))))))))))))}), Arrays.asList(new ExternalClassEntry[]{})) ;}});
-		}
-	}
-	public void createCriteria(final ExternalClassEntry critClass)  {
-		final String critName = critClass.getName() + "Criteria";
-		if (MainFlow.variables.get_declaredCritSet().add(critName)) {
-			
-			final ExternalClassEntry critNameClass = new ExternalClassEntry(){public void __INIT__(){super.__SETUP__(new Entry(){
-			public void get(StringBuilder __BUILDER__){/*Enty*/new ExternalStatement(new StringEntry(MainFlow.variables.get_packageName().toString())).get(__BUILDER__);
-				__BUILDER__.append(".");
-				/*Name*/new ExternalStatement(new StringEntry("misc")).get(__BUILDER__);
-				__BUILDER__.append(".");
-				/*Name*/new ExternalStatement(new StringEntry("criteria")).get(__BUILDER__);
-			}
-		}, 
-		new Entry(){
-			public void get(StringBuilder __BUILDER__){
-			}
-		},new StringEntry(critName), "class ", /*TypeName*/new ExternalStatement.TypeName(new StringEntry("Criteria"), new ExternalStatement(new StringEntry("<"), new StringEntry(">"), ",", /*TypeName*/new ExternalStatement.TypeName(new StringEntry(critClass.getFullName())))), new ArrayList<Entry>(Arrays.asList(new Entry[]{})), 
-		new Entry(){
-		public void get(StringBuilder builder){
-			builder.append(" class ");
-			new StringEntry(critName).get(builder);
-			new StringEntry("").get(builder);
-		}
-	}, Arrays.asList(new ExternalVariableEntry[]{}), Arrays.asList(new ExternalMethodEntry[]{new ExternalMethodEntry(1, false,/*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry("Boolean"))),"", /*Exac*/new ExternalStatement(new StringEntry("satisfies")), /*Parameters*/Arrays.asList(new ExternalVariableEntry[]{new ExternalVariableEntry(false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry(critClass.getFullName()))),"", /*Name*/new ExternalStatement(new StringEntry("candidate")))}), "", /*Body*/new ExternalStatement.Body(
-		/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("return ")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("false")))))))}), Arrays.asList(new ExternalClassEntry[]{})) ;}};
-			critNameClass.__INIT__();
-			final StringBuilder __BUILDER__;
-			final File __DIRECTORY__;
-			__BUILDER__ = new StringBuilder();
-	/*Enty*/new ExternalStatement(new StringEntry(MainFlow.variables.get_packageName().toString())).get(__BUILDER__);
-				__BUILDER__.append(".");
-				/*Name*/new ExternalStatement(new StringEntry("misc")).get(__BUILDER__);
-				__BUILDER__.append(".");
-				/*Name*/new ExternalStatement(new StringEntry("criteria")).get(__BUILDER__);
-	__DIRECTORY__ = new File(MainFlow.__ROOT_DIRECTORY__, __BUILDER__.toString().replace(".","/"));
-	__DIRECTORY__.mkdirs();
-	MainFlow.methods.addFile(__DIRECTORY__,FlowController.camelize(critName)+".java", critNameClass);
-		}
-	}
-	public void createListMap(final ExternalClassEntry leftClass,final ExternalClassEntry rightClass)  {
-		final String leftName = leftClass.getName() + "s";
-		final String rightName = "_" + rightClass.getName();
-		final String fullName = "Maps."+leftName+"."+rightName;
-		if (MainFlow.variables.get_declaredListSet().add(fullName)) {
-			if (MainFlow.classes.ListMapsClass.getSubClass(leftName) == null) {
-MainFlow.classes.ListMapsClass.addSubClass(new ExternalClassEntry(){public void __INIT__(){super.__SETUP__(new Entry(){
-			public void get(StringBuilder __BUILDER__){/*Enty*/new ExternalStatement(new StringEntry(MainFlow.variables.get_packageName().toString())).get(__BUILDER__);
-				__BUILDER__.append(".");
-				/*Name*/new ExternalStatement(new StringEntry("misc")).get(__BUILDER__);
-			}
-		}, 
-		new Entry(){
-			public void get(StringBuilder __BUILDER__){
-			}
-		},new StringEntry(leftName), "class ", null, new ArrayList<Entry>(Arrays.asList(new Entry[]{})), 
-		new Entry(){
-		public void get(StringBuilder builder){
-			builder.append("static class ");
-			new StringEntry(leftName).get(builder);
-			new StringEntry("").get(builder);
-		}
-	}, Arrays.asList(new ExternalVariableEntry[]{}), Arrays.asList(new ExternalMethodEntry[]{}), Arrays.asList(new ExternalClassEntry[]{})) ;}});
-			}
-MainFlow.classes.ListMapsClass.getSubClass(leftName).addSubClass(new ExternalClassEntry(){public void __INIT__(){super.__SETUP__(new Entry(){
-			public void get(StringBuilder __BUILDER__){/*Enty*/new ExternalStatement(new StringEntry(MainFlow.variables.get_packageName().toString())).get(__BUILDER__);
-				__BUILDER__.append(".");
-				/*Name*/new ExternalStatement(new StringEntry("misc")).get(__BUILDER__);
-			}
-		}, 
-		new Entry(){
-			public void get(StringBuilder __BUILDER__){
-			}
-		},new StringEntry(rightName), "class ", /*TypeName*/new ExternalStatement.TypeName(new StringEntry("HashMap"), new ExternalStatement(new StringEntry("<"), new StringEntry(">"), ",", /*TypeName*/new ExternalStatement.TypeName(new StringEntry(leftClass.getFullName())),/*TypeName*/new ExternalStatement.TypeName(new StringEntry("LinkedList"), new ExternalStatement(new StringEntry("<"), new StringEntry(">"), ",", /*TypeName*/new ExternalStatement.TypeName(new StringEntry(rightClass.getFullName())))))), new ArrayList<Entry>(Arrays.asList(new Entry[]{/*TypeName*/new ExternalStatement.TypeName(new StringEntry("Iterable"), new ExternalStatement(new StringEntry("<"), new StringEntry(">"), ",", /*TypeName*/new ExternalStatement.TypeName(new StringEntry(rightClass.getFullName()))))})), 
-		new Entry(){
-		public void get(StringBuilder builder){
-			builder.append("static class ");
-			new StringEntry(rightName).get(builder);
-			new StringEntry("").get(builder);
-		}
-	}, Arrays.asList(new ExternalVariableEntry[]{new ExternalVariableEntry(false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry("LinkedList"), new ExternalStatement(new StringEntry("<"), new StringEntry(">"), ",", /*TypeName*/new ExternalStatement.TypeName(new StringEntry(rightClass.getFullName()))))),"", /*Name*/new ExternalStatement(new StringEntry("completeList")), /*NObj*/new ExternalStatement.NewObject(/*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry("LinkedList"), new ExternalStatement(new StringEntry("<"), new StringEntry(">"), ",", /*TypeName*/new ExternalStatement.TypeName(new StringEntry(rightClass.getFullName()))))),new ExternalStatement.Parameters()))}), Arrays.asList(new ExternalMethodEntry[]{new ExternalMethodEntry(1, false,/*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry("Iterator"), new ExternalStatement(new StringEntry("<"), new StringEntry(">"), ",", /*TypeName*/new ExternalStatement.TypeName(new StringEntry(rightClass.getFullName()))))),"", /*Exac*/new ExternalStatement(new StringEntry("iterator")), /*Parameters*/Arrays.asList(new ExternalVariableEntry[]{}), "", /*Body*/new ExternalStatement.Body(
-		/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("return ")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
-			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("completeList"))), /*Enty*/new ExternalStatement(new StringEntry("iterator"))),
-			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters())))))),new ExternalMethodEntry(1, false,/*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry("LinkedList"), new ExternalStatement(new StringEntry("<"), new StringEntry(">"), ",", /*TypeName*/new ExternalStatement.TypeName(new StringEntry(rightClass.getFullName()))))),"", /*Exac*/new ExternalStatement(new StringEntry("getFrom")), /*Parameters*/Arrays.asList(new ExternalVariableEntry[]{new ExternalVariableEntry(false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry(leftClass.getFullName()))),"", /*Name*/new ExternalStatement(new StringEntry("key")))}), "", /*Body*/new ExternalStatement.Body(
-		/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("return ")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
-			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("super"))), /*Enty*/new ExternalStatement(new StringEntry("get"))),
-			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("key"))))))))))),new ExternalMethodEntry(1, false,/*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry("void"))),"", /*Exac*/new ExternalStatement(new StringEntry("add")), /*Parameters*/Arrays.asList(new ExternalVariableEntry[]{new ExternalVariableEntry(false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry(leftClass.getFullName()))),"", /*Name*/new ExternalStatement(new StringEntry("key"))),
-/*PARAMS*/				new ExternalVariableEntry(false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry(rightClass.getFullName()))),"", /*Name*/new ExternalStatement(new StringEntry("element")))}), "", /*Body*/new ExternalStatement.Body(
-		/*Cond*/new ExternalStatement.Conditional(
-			"if ", 
-			/*Optr*/new ExternalStatement("&&!", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("true")))), /*Call*/new ExternalStatement("",
-			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("super"))), /*Enty*/new ExternalStatement(new StringEntry("containsKey"))),
-			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("key")))))))),
-			/*Body*/new ExternalStatement.Body(
-			/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
-			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("super"))), /*Enty*/new ExternalStatement(new StringEntry("put"))),
-			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("key")))),/*Name*/new ExternalStatement(/*NObj*/new ExternalStatement.NewObject(/*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry("LinkedList"), new ExternalStatement(new StringEntry("<"), new StringEntry(">"), ",", /*TypeName*/new ExternalStatement.TypeName(new StringEntry(rightClass.getFullName()))))),new ExternalStatement.Parameters()))))))))),
-/*BODY*/				
-		/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
-			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("completeList"))), /*Enty*/new ExternalStatement(new StringEntry("add"))),
-			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("element"))))))))),
-/*BODY*/				
-		/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
-			 	new ExternalStatement(".", /*Call*/new ExternalStatement("",
-			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("super"))), /*Enty*/new ExternalStatement(new StringEntry("get"))),
-			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("key"))))))), /*Enty*/new ExternalStatement(new StringEntry("add"))),
-			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("element"))))))))))),new ExternalMethodEntry(1, false,/*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry("void"))),"", /*Exac*/new ExternalStatement(new StringEntry("removeLast")), /*Parameters*/Arrays.asList(new ExternalVariableEntry[]{new ExternalVariableEntry(false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry(leftClass.getFullName()))),"", /*Name*/new ExternalStatement(new StringEntry("key")))}), "", /*Body*/new ExternalStatement.Body(
-		/*Cond*/new ExternalStatement.Conditional(
-			"if ", 
-			/*Optr*/new ExternalStatement("&&!", /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
-			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("super"))), /*Enty*/new ExternalStatement(new StringEntry("containsKey"))),
-			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("key")))))))), /*Call*/new ExternalStatement("",
-			 	new ExternalStatement(".", /*Call*/new ExternalStatement("",
-			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("super"))), /*Enty*/new ExternalStatement(new StringEntry("get"))),
-			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("key"))))))), /*Enty*/new ExternalStatement(new StringEntry("isEmpty"))),
-			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters()))),
-			/*Body*/new ExternalStatement.Body(
-			/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
-			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("completeList"))), /*Enty*/new ExternalStatement(new StringEntry("remove"))),
-			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
-			 	new ExternalStatement(".", /*Call*/new ExternalStatement("",
-			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("super"))), /*Enty*/new ExternalStatement(new StringEntry("get"))),
-			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("key"))))))), /*Enty*/new ExternalStatement(new StringEntry("removeLast"))),
-			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters())))))))))))),new ExternalMethodEntry(1, false,/*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry("void"))),"", /*Exac*/new ExternalStatement(new StringEntry("removeAll")), /*Parameters*/Arrays.asList(new ExternalVariableEntry[]{new ExternalVariableEntry(false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry(leftClass.getFullName()))),"", /*Name*/new ExternalStatement(new StringEntry("key")))}), "", /*Body*/new ExternalStatement.Body(
-		/*Cond*/new ExternalStatement.Conditional(
-			"if ", 
-			/*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
-			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("super"))), /*Enty*/new ExternalStatement(new StringEntry("containsKey"))),
-			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("key")))))))),
-			/*Body*/new ExternalStatement.Body(
-			/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
-			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("completeList"))), /*Enty*/new ExternalStatement(new StringEntry("removeAll"))),
-			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
-			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("super"))), /*Enty*/new ExternalStatement(new StringEntry("get"))),
-			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("key"))))))))))))),
-/*BODY*/				
-			/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
-			 	new ExternalStatement(".", /*Call*/new ExternalStatement("",
-			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("super"))), /*Enty*/new ExternalStatement(new StringEntry("get"))),
-			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("key"))))))), /*Enty*/new ExternalStatement(new StringEntry("clear"))),
-			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters())))))))),new ExternalMethodEntry(1, false,/*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry("void"))),"", /*Exac*/new ExternalStatement(new StringEntry("remove")), /*Parameters*/Arrays.asList(new ExternalVariableEntry[]{new ExternalVariableEntry(false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry(leftClass.getFullName()))),"", /*Name*/new ExternalStatement(new StringEntry("key"))),
-/*PARAMS*/				new ExternalVariableEntry(false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry(rightClass.getFullName()))),"", /*Name*/new ExternalStatement(new StringEntry("element")))}), "", /*Body*/new ExternalStatement.Body(
-		/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
-			 	new ExternalStatement(".", /*Call*/new ExternalStatement("",
-			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("super"))), /*Enty*/new ExternalStatement(new StringEntry("get"))),
-			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("key"))))))), /*Enty*/new ExternalStatement(new StringEntry("remove"))),
-			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("element"))))))))),
-/*BODY*/				
-		/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
-			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("completeList"))), /*Enty*/new ExternalStatement(new StringEntry("remove"))),
-			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("element"))))))))))),new ExternalMethodEntry(1, false,/*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry("List"), new ExternalStatement(new StringEntry("<"), new StringEntry(">"), ",", /*TypeName*/new ExternalStatement.TypeName(new StringEntry(rightClass.getFullName()))))),"", /*Exac*/new ExternalStatement(new StringEntry("getAll")), /*Parameters*/Arrays.asList(new ExternalVariableEntry[]{}), "", /*Body*/new ExternalStatement.Body(
-		/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("return ")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("completeList")))))))}), Arrays.asList(new ExternalClassEntry[]{})) ;}});
-		}
-	}
-	public void createMap(final ExternalClassEntry keyClass,final ExternalClassEntry valueClass)  {
-		final String keyName = keyClass.getName() + "Map";
-		final String valueName = "_" + valueClass.getName();
-		final String fullName = "Maps."+keyName+"."+valueName;
-		if (MainFlow.variables.get_declaredMapSet().add(fullName)) {
-			
-			final ExternalClassEntry keyNameClass = new ExternalClassEntry(){public void __INIT__(){super.__SETUP__(new Entry(){
-			public void get(StringBuilder __BUILDER__){/*Enty*/new ExternalStatement(new StringEntry(MainFlow.variables.get_packageName().toString())).get(__BUILDER__);
-				__BUILDER__.append(".");
-				/*Name*/new ExternalStatement(new StringEntry("misc")).get(__BUILDER__);
-				__BUILDER__.append(".");
-				/*Name*/new ExternalStatement(new StringEntry("maps")).get(__BUILDER__);
-			}
-		}, 
-		new Entry(){
-			public void get(StringBuilder __BUILDER__){
-			}
-		},new StringEntry(keyName), "class ", null, new ArrayList<Entry>(Arrays.asList(new Entry[]{})), 
-		new Entry(){
-		public void get(StringBuilder builder){
-			builder.append(" class ");
-			new StringEntry(keyName).get(builder);
-			new StringEntry("").get(builder);
-		}
-	}, Arrays.asList(new ExternalVariableEntry[]{}), Arrays.asList(new ExternalMethodEntry[]{}), Arrays.asList(new ExternalClassEntry[]{})) ;}};
-			keyNameClass.__INIT__();
-			final StringBuilder __BUILDER__;
-			final File __DIRECTORY__;
-			__BUILDER__ = new StringBuilder();
-	/*Enty*/new ExternalStatement(new StringEntry(MainFlow.variables.get_packageName().toString())).get(__BUILDER__);
-				__BUILDER__.append(".");
-				/*Name*/new ExternalStatement(new StringEntry("misc")).get(__BUILDER__);
-				__BUILDER__.append(".");
-				/*Name*/new ExternalStatement(new StringEntry("maps")).get(__BUILDER__);
-	__DIRECTORY__ = new File(MainFlow.__ROOT_DIRECTORY__, __BUILDER__.toString().replace(".","/"));
-	__DIRECTORY__.mkdirs();
-	MainFlow.methods.addFile(__DIRECTORY__,FlowController.camelize(keyName)+".java", keyNameClass);
-keyNameClass.addSubClass(new ExternalClassEntry(){public void __INIT__(){super.__SETUP__(new Entry(){
-			public void get(StringBuilder __BUILDER__){/*Enty*/new ExternalStatement(new StringEntry(MainFlow.variables.get_packageName().toString())).get(__BUILDER__);
-				__BUILDER__.append(".");
-				/*Name*/new ExternalStatement(new StringEntry("misc")).get(__BUILDER__);
-				__BUILDER__.append(".");
-				/*Name*/new ExternalStatement(new StringEntry("maps")).get(__BUILDER__);
-			}
-		}, 
-		new Entry(){
-			public void get(StringBuilder __BUILDER__){
-			}
-		},new StringEntry(valueName), "class ", /*TypeName*/new ExternalStatement.TypeName(new StringEntry("HashMap"), new ExternalStatement(new StringEntry("<"), new StringEntry(">"), ",", /*TypeName*/new ExternalStatement.TypeName(new StringEntry(keyClass.getFullName())),/*TypeName*/new ExternalStatement.TypeName(new StringEntry(valueClass.getFullName())))), new ArrayList<Entry>(Arrays.asList(new Entry[]{})), 
-		new Entry(){
-		public void get(StringBuilder builder){
-			builder.append("static class ");
-			new StringEntry(valueName).get(builder);
-			new StringEntry("").get(builder);
-		}
-	}, Arrays.asList(new ExternalVariableEntry[]{}), Arrays.asList(new ExternalMethodEntry[]{new ExternalMethodEntry(1, false,/*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry(valueClass.getFullName()))),"", /*Exac*/new ExternalStatement(new StringEntry("get")), /*Parameters*/Arrays.asList(new ExternalVariableEntry[]{new ExternalVariableEntry(false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry(keyClass.getFullName()))),"", /*Name*/new ExternalStatement(new StringEntry("key"))),
-/*PARAMS*/				new ExternalVariableEntry(false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new ExternalStatement(".", /*TypeName*/new ExternalStatement.TypeName(new StringEntry(valueClass.getFullName())), /*TypeName*/new ExternalStatement.TypeName(new StringEntry("Factory"))))),"", /*Name*/new ExternalStatement(new StringEntry("factory")))}), "", /*Body*/new ExternalStatement.Body(
-		/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), new ExternalVariableEntry(false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry(valueClass.getFullName()))),"", /*Name*/new ExternalStatement(new StringEntry("result")), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement(null,new StringEntry(")"),"(",/*Name*/new ExternalStatement(new StringEntry("get")),new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("key"))))))))),
-/*BODY*/				
-		/*Cond*/new ExternalStatement.Conditional(
-			"if ", 
-			/*Optr*/new ExternalStatement("==", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("result")))), /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("null")))),
-			/*Body*/new ExternalStatement.Body(
-			/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Optr*/new ExternalStatement("=", /*Name*/new ExternalStatement(new StringEntry("result")), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
-			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("factory"))), /*Enty*/new ExternalStatement(new StringEntry("create"))),
-			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters()))))),
-/*BODY*/				
-			/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement(null,new StringEntry(")"),"(",/*Name*/new ExternalStatement(new StringEntry("put")),new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("key")))),/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("result")))))))),
-/*BODY*/				
-			/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("return ")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("result"))))))),
-/*BODY*/				
-		/*Cond*/new ExternalStatement.Conditional(
-			"else ", null,
-			/*Body*/new ExternalStatement.Body(
-			/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("return ")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("result")))))))))}), Arrays.asList(new ExternalClassEntry[]{})) ;}});
-		}
 	}
 	public String percentify(final String input)  {
 		final Double result = Double.parseDouble(input) / 100.0;
@@ -1306,30 +1138,6 @@ keyNameClass.addSubClass(new ExternalClassEntry(){public void __INIT__(){super._
 			}
 		}
 	}
-	public Set<String> getDeclaredCritSet()  {
-		return __VAR__declaredCritSet;
-	}
-	public Set<String> get_declaredCritSet()  {
-		return __VAR__declaredCritSet;
-	}
-	public Set<String> getDeclaredListSet()  {
-		return __VAR__declaredListSet;
-	}
-	public Set<String> get_declaredListSet()  {
-		return __VAR__declaredListSet;
-	}
-	public Set<String> getDeclaredMapSet()  {
-		return __VAR__declaredMapSet;
-	}
-	public Set<String> get_declaredMapSet()  {
-		return __VAR__declaredMapSet;
-	}
-	public String getTT()  {
-		return __VAR__TT;
-	}
-	public String get_TT()  {
-		return __VAR__TT;
-	}
 	public String getMainStringArgs()  {
 		return __VAR__mainStringArgs;
 	}
@@ -1443,10 +1251,10 @@ keyNameClass.addSubClass(new ExternalClassEntry(){public void __INIT__(){super._
 				__BUILDER__ = new StringBuilder();
 	/*Enty*/new ExternalStatement(new StringEntry(MainFlow.variables.get_packageName().toString())).get(__BUILDER__);
 				__BUILDER__.append(".");
-				/*Name*/new ExternalStatement(new StringEntry("events")).get(__BUILDER__);
+				/*Name*/new ExternalStatement(new StringEntry("misc")).get(__BUILDER__);
 	__DIRECTORY__ = new File(__ROOT_DIRECTORY__, __BUILDER__.toString().replace(".","/"));
 	__DIRECTORY__.mkdirs();
-	addFile(__DIRECTORY__,FlowController.camelize("Listener")+".java", MainFlow.classes.ListenerClass);
+	addFile(__DIRECTORY__,FlowController.camelize("Range")+".java", MainFlow.classes.RangeClass);
 				__BUILDER__ = new StringBuilder();
 	/*Enty*/new ExternalStatement(new StringEntry(MainFlow.variables.get_packageName().toString())).get(__BUILDER__);
 				__BUILDER__.append(".");
@@ -1464,67 +1272,17 @@ keyNameClass.addSubClass(new ExternalClassEntry(){public void __INIT__(){super._
 				__BUILDER__ = new StringBuilder();
 	/*Enty*/new ExternalStatement(new StringEntry(MainFlow.variables.get_packageName().toString())).get(__BUILDER__);
 				__BUILDER__.append(".");
-				/*Name*/new ExternalStatement(new StringEntry("misc")).get(__BUILDER__);
-				__BUILDER__.append(".");
-				/*Name*/new ExternalStatement(new StringEntry("interfaces")).get(__BUILDER__);
+				/*Name*/new ExternalStatement(new StringEntry("gui")).get(__BUILDER__);
 	__DIRECTORY__ = new File(__ROOT_DIRECTORY__, __BUILDER__.toString().replace(".","/"));
 	__DIRECTORY__.mkdirs();
-	addFile(__DIRECTORY__,FlowController.camelize("Listenable")+".java", MainFlow.classes.ListenableClass);
+	addFile(__DIRECTORY__,FlowController.camelize("GraphicsHandler")+".java", MainFlow.classes.GraphicsHandlerClass);
 				__BUILDER__ = new StringBuilder();
 	/*Enty*/new ExternalStatement(new StringEntry(MainFlow.variables.get_packageName().toString())).get(__BUILDER__);
 				__BUILDER__.append(".");
-				/*Name*/new ExternalStatement(new StringEntry("misc")).get(__BUILDER__);
-				__BUILDER__.append(".");
-				/*Name*/new ExternalStatement(new StringEntry("interfaces")).get(__BUILDER__);
+				/*Name*/new ExternalStatement(new StringEntry("gui")).get(__BUILDER__);
 	__DIRECTORY__ = new File(__ROOT_DIRECTORY__, __BUILDER__.toString().replace(".","/"));
 	__DIRECTORY__.mkdirs();
-	addFile(__DIRECTORY__,FlowController.camelize("Source")+".java", MainFlow.classes.SourceClass);
-				__BUILDER__ = new StringBuilder();
-	/*Enty*/new ExternalStatement(new StringEntry(MainFlow.variables.get_packageName().toString())).get(__BUILDER__);
-				__BUILDER__.append(".");
-				/*Name*/new ExternalStatement(new StringEntry("misc")).get(__BUILDER__);
-				__BUILDER__.append(".");
-				/*Name*/new ExternalStatement(new StringEntry("interfaces")).get(__BUILDER__);
-	__DIRECTORY__ = new File(__ROOT_DIRECTORY__, __BUILDER__.toString().replace(".","/"));
-	__DIRECTORY__.mkdirs();
-	addFile(__DIRECTORY__,FlowController.camelize("Loaddable")+".java", MainFlow.classes.LoaddableClass);
-				__BUILDER__ = new StringBuilder();
-	/*Enty*/new ExternalStatement(new StringEntry(MainFlow.variables.get_packageName().toString())).get(__BUILDER__);
-				__BUILDER__.append(".");
-				/*Name*/new ExternalStatement(new StringEntry("misc")).get(__BUILDER__);
-				__BUILDER__.append(".");
-				/*Name*/new ExternalStatement(new StringEntry("interfaces")).get(__BUILDER__);
-	__DIRECTORY__ = new File(__ROOT_DIRECTORY__, __BUILDER__.toString().replace(".","/"));
-	__DIRECTORY__.mkdirs();
-	addFile(__DIRECTORY__,FlowController.camelize("Tickable")+".java", MainFlow.classes.TickableClass);
-				__BUILDER__ = new StringBuilder();
-	/*Enty*/new ExternalStatement(new StringEntry(MainFlow.variables.get_packageName().toString())).get(__BUILDER__);
-				__BUILDER__.append(".");
-				/*Name*/new ExternalStatement(new StringEntry("misc")).get(__BUILDER__);
-	__DIRECTORY__ = new File(__ROOT_DIRECTORY__, __BUILDER__.toString().replace(".","/"));
-	__DIRECTORY__.mkdirs();
-	addFile(__DIRECTORY__,FlowController.camelize("Range")+".java", MainFlow.classes.RangeClass);
-				__BUILDER__ = new StringBuilder();
-	/*Enty*/new ExternalStatement(new StringEntry(MainFlow.variables.get_packageName().toString())).get(__BUILDER__);
-				__BUILDER__.append(".");
-				/*Name*/new ExternalStatement(new StringEntry("misc")).get(__BUILDER__);
-	__DIRECTORY__ = new File(__ROOT_DIRECTORY__, __BUILDER__.toString().replace(".","/"));
-	__DIRECTORY__.mkdirs();
-	addFile(__DIRECTORY__,FlowController.camelize("ListMaps")+".java", MainFlow.classes.ListMapsClass);
-				__BUILDER__ = new StringBuilder();
-	/*Enty*/new ExternalStatement(new StringEntry(MainFlow.variables.get_packageName().toString())).get(__BUILDER__);
-				__BUILDER__.append(".");
-				/*Name*/new ExternalStatement(new StringEntry("misc")).get(__BUILDER__);
-	__DIRECTORY__ = new File(__ROOT_DIRECTORY__, __BUILDER__.toString().replace(".","/"));
-	__DIRECTORY__.mkdirs();
-	addFile(__DIRECTORY__,FlowController.camelize("Criteria")+".java", MainFlow.classes.CriteriaClass);
-				__BUILDER__ = new StringBuilder();
-	/*Enty*/new ExternalStatement(new StringEntry(MainFlow.variables.get_packageName().toString())).get(__BUILDER__);
-				__BUILDER__.append(".");
-				/*Name*/new ExternalStatement(new StringEntry("misc")).get(__BUILDER__);
-	__DIRECTORY__ = new File(__ROOT_DIRECTORY__, __BUILDER__.toString().replace(".","/"));
-	__DIRECTORY__.mkdirs();
-	addFile(__DIRECTORY__,FlowController.camelize("Factory")+".java", MainFlow.classes.FactoryClass);
+	addFile(__DIRECTORY__,FlowController.camelize("MouseHandler")+".java", MainFlow.classes.MouseHandlerClass);
 				__BUILDER__ = new StringBuilder();
 	/*Enty*/new ExternalStatement(new StringEntry(MainFlow.variables.get_packageName().toString())).get(__BUILDER__);
 				__BUILDER__.append(".");
@@ -1618,17 +1376,12 @@ keyNameClass.addSubClass(new ExternalClassEntry(){public void __INIT__(){super._
 		MainFlow.classes.StateClass.__INIT__();
 		ExternalClassEntry.suppliment("Serializable", "java.io");
 		ExternalClassEntry.suppliment("Random", "java.util");
-		MainFlow.classes.ListenerClass.__INIT__();
+		MainFlow.classes.RangeClass.__INIT__();
 		MainFlow.classes.EventsClass.__INIT__();
 		MainFlow.classes.EventClass.__INIT__();
-		MainFlow.classes.ListenableClass.__INIT__();
-		MainFlow.classes.SourceClass.__INIT__();
-		MainFlow.classes.LoaddableClass.__INIT__();
-		MainFlow.classes.TickableClass.__INIT__();
-		MainFlow.classes.RangeClass.__INIT__();
-		MainFlow.classes.ListMapsClass.__INIT__();
-		MainFlow.classes.CriteriaClass.__INIT__();
-		MainFlow.classes.FactoryClass.__INIT__();
+		ExternalClassEntry.suppliment("Font", "java.awt");
+		MainFlow.classes.GraphicsHandlerClass.__INIT__();
+		MainFlow.classes.MouseHandlerClass.__INIT__();
 		ExternalClassEntry.suppliment("BorderLayout", "java.awt");
 		ExternalClassEntry.suppliment("Dimension", "java.awt");
 		ExternalClassEntry.suppliment("JPanel", "javax.swing");

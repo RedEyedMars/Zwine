@@ -79,6 +79,7 @@ body_element
 	while_statement
 	for_statement
 	variable_declaration
+	( variable_call EQUALSIGN statement ) as assignment
 	statement
 
 if_statement

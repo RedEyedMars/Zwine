@@ -26,7 +26,12 @@ public class StateAltBraces extends ParseList {
 												
 											new ChoiceParser(
 													StateTokens.SPACE,
-													StateBraces.SPECIAL_DESCRIPTOR,
+												new ChainParser(
+													StateTokens.BACKSLASH,
+													new AddTokenParser(
+														GeneralTokens.COLON,"special_descriptor")),
+													new AddTokenParser(
+														StateBraces.SPECIAL_DESCRIPTOR,"special_descriptor"),
 													StateTokens.NON_SPACE),"descriptor")),"descriptionLine"),"DESCRIPTION_LINE","stateAltBraces",",\n");
 
 	public static final ChoiceParser parser = new ChoiceParser(

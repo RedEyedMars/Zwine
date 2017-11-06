@@ -1,9 +1,14 @@
 < BorderLayout : \java.\awt;
 < Dimension    : \java.\awt;
 < JPanel       : \javax.\swing;
+import graphicshandler.clws
 class 'packageName'."gui" Gui JFrame{
 > Set<String> imageLoaders = new HashSet<String>();
 > void setup(){
+    GraphicsHandler->*.appendToBody({
+      "x" = "startX";
+      "y" = "startY";
+      "elements".add(new GraphicsHandler->Element->Style(Color.white));});
   }
 > void image_declaration(IToken declaration){
     String imageId = 'declaration->"imageId"';

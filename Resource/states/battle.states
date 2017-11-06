@@ -1,12 +1,12 @@
 *** Battle ***
 [Start]
-	/battle.text/ /n/ /hero.name/ : /hero.hp/ \ /hero.maxHp/
+	/battle.text/ /n/ /hero.name/ : /hero.hp/ // /hero.maxHp/
 if battle.monsters.size() > 0 : Attack /battle.monsters[0].name/ :-> [HeroEvent] { battle.event = hero.attack(battle.monsters[0]) }
 if battle.monsters.size() > 1 : Attack /battle.monsters[1].name/ :-> [HeroEvent] { battle.event = hero.attack(battle.monsters[1]) }
 if battle.monsters.size() > 2 : Attack /battle.monsters[2].name/ :-> [HeroEvent] { battle.event = hero.attack(battle.monsters[2]) }
 
 [Continue]
-	/hero.name/ \: /hero.hp/ \ /hero.maxHp/ /n/ vs
+	/hero.name/ \: /hero.hp/ // /hero.maxHp/ /n/ vs
 if battle.monsters.size() > 0 :
 	/n/ /battle.monsters[0].name/
 if battle.monsters.size() > 1 :

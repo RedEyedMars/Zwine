@@ -35,7 +35,8 @@ public class StateBraces extends ParseList {
 											GeneralTokens.NAME)),
 									GeneralTokens.NAME),"transitionIndex"),"TRANSITION_INDEX","stateBraces","[,]");
 	public static final BracedParser SPECIAL_DESCRIPTOR = new BracedParser(
-							Rules.special_descriptor,"SPECIAL_DESCRIPTOR","stateBraces","/,/");
+							new OptionalParser(
+									Rules.special_descriptor),"SPECIAL_DESCRIPTOR","stateBraces","/,/");
 	public static final BracedParser CHOICE_NAME = new BracedParser(
 							new AddTokenParser(
 								
@@ -44,7 +45,12 @@ public class StateBraces extends ParseList {
 												
 											new ChoiceParser(
 													StateTokens.SPACE,
-													StateBraces.SPECIAL_DESCRIPTOR,
+												new ChainParser(
+													StateTokens.BACKSLASH,
+													new AddTokenParser(
+														GeneralTokens.COLON,"special_descriptor")),
+													new AddTokenParser(
+														StateBraces.SPECIAL_DESCRIPTOR,"special_descriptor"),
 													StateTokens.NON_SPACE_OR_SQUARE),"descriptor")),"choiceName"),"CHOICE_NAME","stateBraces",",:");
 
 	public static final ChoiceParser parser = new ChoiceParser(

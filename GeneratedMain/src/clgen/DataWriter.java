@@ -54,6 +54,7 @@ import com.rem.parser.generation.classwise.ExternalImportEntry;
 import com.rem.parser.generation.StringEntry;
 import java.io.Serializable;
 import java.util.Random;
+import java.awt.Font;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.MouseMotionListener;

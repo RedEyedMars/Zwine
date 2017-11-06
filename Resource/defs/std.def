@@ -5,7 +5,7 @@ hp = maxHp
 str = 0
 dex = 0
 con = 0
-die(){
+String die(){
   return name +" has died!"
 }
 boolean isDead() {

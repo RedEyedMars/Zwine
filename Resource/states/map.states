@@ -8,7 +8,7 @@
 Enter: + hero = new Hero()
 	hero.name = "Bob"
 	+ Battle battle = null
-if hero.name == "Rose": Move Forward:  -> [1]
+if hero.name == "Bob": Move Forward:  -> [1]
 Move Backward: -> [2]
 [1]
 	You move forward into the dark hallway.

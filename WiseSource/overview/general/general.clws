@@ -1,83 +1,14 @@
 
-> Set<String> declaredCritSet = new HashSet<String>();
-> Set<String> declaredListSet = new HashSet<String>();
-> Set<String> declaredMapSet = new HashSet<String>();
-> String TT = "<T>T";
-interface 'packageName'."misc"."interfaces" Listenable <TypeName> {
-  void listen('"TypeName"' "event"){}
-}
-interface 'packageName'."misc"."interfaces" Source {
-}
-interface 'packageName'."misc"."interfaces" Loaddable {
-  void load(){}
-}
-interface 'packageName'."misc"."interfaces" Tickable {
-  void tick(Double "millisSinceLastFrame"){}
-}
-
 class 'packageName'."misc" Range {
-  Float "left" = 0f;
-  Float "right" = 0f;
-  
-  >String floatCast = "(float)(int)";
-  @Integer getIntegerBetween(Integer "bottom", Integer "top"){
-    
-    Integer "difference" = "top" - "bottom";
-    Double  "result" = "difference" * \Math.random() + "bottom";
-    return "(int)(double)result";
-  }
-  Range *(Integer "initialLeft", Integer "initialRight"){
-    "left" = 'floatCast+"initialLeft"';
-    "right" = 'floatCast+"initialRight"';
-  } 
-  Range *(Float "initialLeft", Integer "initialRight"){
-    "left" = "initialLeft";
-    "right" = 'floatCast+"initialRight"';
-  }
-  Range *(Integer "initialLeft", Float "initialRight"){
-    "left" = 'floatCast+"initialLeft"';
-    "right" = "initialRight";
-  }
-  @$'TT' select(List<\T> collection){
-    if collection.isEmpty(){
-	  return null;
-	}
-	return "collection.get((int)(collection.size()*Math.random()))";
-  }
-  @Float getRandomFloat(){
-    return "(float)Math.random()";
-  }
-  @Integer getRandom(Integer lowerBound, Integer upperBound){
-    if lowerBound >= upperBound {
-      return lowerBound;
-    }
-    else {
-      return "(int)((upperBound-lowerBound)*Math.random())+lowerBound";
-    }
-  }
-  @Integer normalize(Double value){
-    if value > 0.001 {
-      return 1;
-    }
-    else if value < -0.001 {
-      return -1;
-    }
-    else {
-      return 0;
-    }
-  }
-  Double getRandom(){
-    Float "difference" = "right" - "left";
-    return "difference" * \Math.random() + "left";
-  }
+  Integer start = 0;
+  Integer end = 0;
 }
 
-class 'packageName'."misc" ListMaps {
-}
-class 'packageName'."misc" Criteria<TypeName> {
-  Boolean satisfies( '"TypeName"' "candidate"){
-    return false;
+class 'packageName'."events" Events {
+> void declaration(IToken declaration){
   }
+}
+class 'packageName'."events" Event {
 }
 
 > Body getBodyElements(IToken elementsToken, Context context){
@@ -103,6 +34,9 @@ class 'packageName'."misc" Criteria<TypeName> {
       }
 	  : variable_declaration {
 	    return \getVariableDeclaration(element, context);
+	  }
+	  : assignment {
+	    return |`\getSetVariableCall(element->"variable_call", context)`(`\getStatement(element->"statement", context)`);|;
 	  }
       : if_statement {
         return \getIfStatement(element, context);
@@ -331,6 +265,102 @@ class 'packageName'."misc" Criteria<TypeName> {
 	}
 	return ret;
   }
+> Statement getSetVariableCall(IToken variableCallToken, Context context){
+	~Context currentContext = context;
+	Statement ret = new Statement(".");
+	~Integer callCount = -1;
+	variableCallToken : element
+	  : range {  callCount \+= 1; }
+	  : braced { callCount \+= 1; }
+	  : exact {  callCount \+= 1; }
+	  : quote {  callCount \+= 1; }
+	  : cast {   callCount \+= 1; }
+	  : variableName { callCount \+= 1; }
+	  : method { callCount \+= 1; }
+	variableCallToken : element
+	  : range {
+	    ret.add(|new Range('element->"left"','element->"right"')|);
+	  }
+	  : braced {
+		Statement subStatement = \getStatement(element,context);
+		subStatement.brace();
+		ret.add(subStatement);
+	  }
+	  : exact {
+	    if element->"FLOAT" != null {
+	      ret.add(|'element'+"f"|);
+	    }
+	    else {
+	      ret.add(|'element'|);
+	    }
+	  }
+	  : quote {
+	    ret.add(|''element''|);
+	  }
+	  : cast {
+	    String typeName = \getTypeName(element->"type_name");
+	    Context typeContext = currentContext.getClassContext(typeName);
+	    if typeContext == null {
+		    throw "Could not find "+'typeName'+" type in context!";
+		}
+		
+	    Statement castStatement = new Statement ();
+	    castStatement.add(|$'typeName'|);
+	    castStatement.brace();
+	    Statement fullStatement = new Statement();
+	    fullStatement.add(castStatement);
+	    fullStatement.add(\getStatement(element->"statement",context));
+		ret.add(fullStatement);
+	  }
+	  : variableName {
+	  	currentContext = currentContext.link('element'); 
+		if currentContext == null {
+		    throw "Could not find "+'element'+" variable in context!";
+		}
+		
+		if ret.size() == callCount {
+		  ret.add(|'"set"+^element'|);
+		}
+		else if  ret.size() == 0 {
+		  ret.add(|'element'|);
+		}
+		else {
+		  ret.add(|'"get"+^element'()|);
+		}
+	  }
+	  : method {
+		String methodName;
+		if element->"methodName" != null {
+		  methodName = 'element->"methodName"';
+		}
+		else {
+		  methodName = \getTypeName(element->"type_name");
+		}
+		Parameters parameters = new Parameters();
+		element : atom
+		  : statement {
+			parameters.add(\getStatement(atom,context));
+		  }
+		if element->"NEW" != null {
+          currentContext = currentContext.getClassContext(methodName);
+		  if currentContext == null {
+		    throw "Could not find \"+methodName+\" type in context!";
+		  }
+		  ret.add(|new 'methodName'(`parameters`)|);
+		}
+	  	else {
+		  currentContext = currentContext.link(methodName);
+		  if currentContext == null {
+		    throw "Could not find "+'element'+" method in context!";
+		  }
+		  ret.add(|'element'(`parameters`)|);
+		}
+	  }
+	if currentContext != null && currentContext.hasEnder() {
+	  ret.add(currentContext.getEnder());
+	}
+	return ret;
+  }
 
 
 > Statement primeRange(IToken rangeToken){
@@ -346,97 +376,6 @@ class 'packageName'."misc" Criteria<TypeName> {
 > Statement getChance(IToken chanceToken){
     Double value = Double.parseDouble('chanceToken') / 100.0;
     return |\Math.random() <= 'value' |;
-  }
-> void createList(Class listClass) {
-	String listName = listClass.getFullName()+ "List";
-	if declaredListSet.add(listName) {
-	  listClass += class List / ArrayList<listClass> / {
-	    List *( listClass... "elements" ){
-	      \super(Arrays.asList("elements"));
-	    }
-	  }
-	}
-  }
-> void createCriteria(Class critClass) {
-	String critName = critClass.getName()+"Criteria";
-	if declaredCritSet.add(critName) {
-	  class 'packageName'."misc"."criteria" critName Criteria<critClass> {
-	    Boolean satisfies(critClass "candidate"){
-	      return false;
-	    }
-	  }
-	}
-  }
-  
-> void createListMap(Class leftClass, Class rightClass) {
-	String leftName  = leftClass.getName()+"s";
-	String rightName = "_"+rightClass.getName();
-	String fullName  = "Maps."+leftName+"."+rightName;
-	if declaredListSet.add(fullName) {
-	  if ListMaps->\leftName == null{
-	    ListMaps += class 'packageName'."misc" leftName {}
-	  }
-	  ListMaps->\leftName  +=	
-	    class 'packageName'."misc" rightName HashMap<leftClass, LinkedList<rightClass>> \Iterable<rightClass>{
-	      LinkedList<rightClass> "completeList";
-	      \Iterator<rightClass> iterator(){
-	        return "completeList".iterator();
-	      }
-	      LinkedList<rightClass> getFrom(leftClass "key"){
-	        return super.get("key");
-	      }
-	      void add(leftClass "key", rightClass "element"){
-	        if true &&! super.containsKey("key") {
-			  super.put("key",new LinkedList<rightClass>());
-			}
-			"completeList".add("element");
-			super.get("key").add("element");
-	      }
-	      void removeLast(leftClass "key"){
-	        if super.containsKey("key") &&! super.get("key").isEmpty() {
-			  "completeList".remove(super.get("key").removeLast());
-			}
-	      }
-		  void removeAll(leftClass "key"){
-		    if super.containsKey("key") {
-			  "completeList".removeAll(super.get("key"));
-			  super.get("key").clear();
-			}
-		  }
-		  void remove(leftClass "key", rightClass "element"){
-		    super.get("key").remove("element");
-			"completeList".remove("element");
-		  }
-		  List<rightClass> getAll(){
-		    return "completeList";
-		  }
-	    }
-	  }
-  }
-  interface 'packageName'."misc" Factory<T> {
-    \T create() {}
-  }
-> void createMap(Class keyClass, Class valueClass) {
-    String keyName  = keyClass.getName()+"Map";
-	String valueName = "_"+valueClass.getName();
-	String fullName  = "Maps."+keyName+"."+valueName;
-	if declaredMapSet.add(fullName) {
-	  class 'packageName'."misc"."maps" keyName {
-	  }
-	  keyName += class 'packageName'."misc"."maps" valueName HashMap<keyClass, valueClass> {
-	    valueClass get(keyClass "key", valueClass->Factory "factory"){
-	      valueClass "result" = \get("key");
-	      if "result" == null {
-	        "result" = "factory".create();
-	        \put("key", "result");
-	        return "result";
-	      }
-	      else {
-	        return "result";
-	      }
-	    }
-	  }
-	}
   }
 > String percentify(String input){
 	Double result = Double.parseDouble(input) / 100.0;

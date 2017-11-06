@@ -1,25 +1,30 @@
 < Font : \java.\awt;
 class 'packageName'."gui" GraphicsHandler {
-  Graphics g = null;
-  int startX = 0;
-  int startY = 0;
+  Integer startX = 0;
+  Integer startY = 0;
   ~int x = 0;
   ~int y = 0;
-  int width = 0;
-  int height = 0;
-  ~List<Graphics\>Element> elements = new ArrayList<Graphics\>Element>();
+  Integer width = 0;
+  Integer height = 0;
+  ~List<GraphicsHandler\>Element> elements = new ArrayList<GraphicsHandler\>Element>();
+  ~int cWidth = 6;
   ~int cHeight = 12;
-  ~int cWidth = 12;
-  ~boolean cropWhitespace = true;
-  GraphicsHandler *(Graphics iG, int iX, int iY, int iW, int iH){
-    g = iG;
-    startX = iX;
-    startY = iY;
-    x = startX;
-    y = startY;
-    width = iW;
-    height = iH;
-    elements.add(new Graphics->Element->Style(Color.white));
+  ~int xPad = 6;
+  ~int yPad = 3;
+  ~boolean cropWhiteSpace = true;
+  ~int sectionX = 0;
+  ~int sectionY = 0;
+  void sectionStart(){
+    sectionX = x;
+    sectionY = y;
+  }
+  MouseHandler sectionEnd(MouseHandler->Action onRelease,MouseHandler->Action onPress,MouseHandler->Action onHover){
+    MouseHandler result = new MouseHandler(startX, sectionY, startX\+width,y);
+    result.setOnRelease(onRelease);
+    result.setOnPress(onPress);
+    result.setOnHover(onHover);
+    elements.add(result.selection());
+    return result;
   }
   void text(String newString){
     if cropWhiteSpace {
@@ -39,22 +44,28 @@ class 'packageName'."gui" GraphicsHandler {
     }
     if x\+newString.length()*cWidth > startX\+width {
       x = startX;
-      y \+= cHeight \+ 3;
+      y \+= cHeight \+ yPad;
       cropWhiteSpace = true;
     }
     elements.add(new GraphicsHandler->Element->Text(newString,x,y));
-    x += newString.length()*cWidth;
+    x += newString.length()*cWidth\+xPad;
   }
   void newline(){
     x = startX;
     y \+= cHeight \+ 3;
     cropWhiteSpace = true;
   }
-  void display(){
+  void display(Graphics g){
     GraphicsHandler->Element->Style style = null;
-    for Graphics->Element element: elements {
+    for GraphicsHandler->Element element: elements {
       style = element.display(g,style);
     }
+  }
+  void clear(){
+    elements.clear();
+    x = startX;
+    y = startY;
+    elements.add(new GraphicsHandler->Element->Style(Color.white));
   }
   class Element // {
     GraphicsHandler->Element->Style display(Graphics g, GraphicsHandler->Element->Style s){
@@ -71,7 +82,7 @@ class 'packageName'."gui" GraphicsHandler {
       }
       GraphicsHandler->Element->Style display(Graphics g, GraphicsHandler->Element->Style s){
         if s != this {
-          if color != null {
+          if colour != null {
             g.setColor(colour);
           }
         }
@@ -80,9 +91,9 @@ class 'packageName'."gui" GraphicsHandler {
     }
     class Text /GraphicsHandler->Element/ {
       String text = null;
-      int x = 0;
-      int y = 0;
-      ~GraphicsHandler->Element->Style style = null
+      Integer x = 0;
+      Integer y = 0;
+      ~GraphicsHandler->Element->Style style = null;
       int length(){
         return text.length();
       }
@@ -93,6 +104,96 @@ class 'packageName'."gui" GraphicsHandler {
         g.drawString(text,x,y);
         return s;
       }
+    }
+    class Selection /GraphicsHandler->Element/ {
+      Integer u = 0;
+      Integer w = 0;
+      Integer x = 0;
+      Integer y = 0;
+      
+      ~boolean show = false;
+      ~Color colour = Color.white;
+      GraphicsHandler->Element->Style display(Graphics g, GraphicsHandler->Element->Style s){
+        if s == null || s.getColour() != colour {
+          g.setColor(colour);
+          if show {
+            g.drawRoundRect(u,w,x,y,15,10);
+          }
+          if s != null {
+            return s.display(g,s);
+          }
+          else {
+            return null;
+          }
+        }
+        else {
+          if show {
+            g.drawRoundRect(u,w,x-u,y-w,15,10);
+          }
+          return s;
+        }
+      }
+    }
+  }
+}
+class 'packageName'.gui MouseHandler {
+  ~MouseHandler->Action onRelease = null;
+  ~MouseHandler->Action onPress = null;
+  ~MouseHandler->Action onHover = null;
+  Integer originX = 0;
+  Integer originY = 0;
+  Integer extentX = 0;
+  Integer extentY = 0;
+  ~GraphicsHandler->Element->Selection selection = null;
+  void bound(int u, int w, int x , int y){
+    originX = u;
+    originY = w;
+    extentX = x;
+    extentY = y;
+  } 
+  void release(int x, int y){
+    if x >= originX && x <= extentX && y >= originY && y <= extentY {
+      if onRelease != null {
+        onRelease.act();
+      }
+    }
+  }
+  void press(int x, int y){
+    if x >= originX && x <= extentX && y >= originY && y <= extentY {
+      if onPress != null {
+        onPress.act();
+      }
+    }
+  }
+  void hover(int x, int y){
+    if x >= originX && x <= extentX && y >= originY && y <= extentY {
+      if onHover != null {
+        onHover.act();
+      }
+      if selection != null {
+        if selection.getShow() == false {
+          selection.setShow(true);
+          Gui.refresh();
+        }
+      }
+    }
+    else {
+      if selection != null {
+        if selection.getShow() == true {
+          selection.setShow(false);
+          Gui.refresh();
+        }
+      }
+    }
+  }
+  GraphicsHandler->Element->Selection selection(){
+    if selection == null {
+      selection = new GraphicsHandler->Element->Selection(originX,originY,extentX,extentY);
+    }
+    return selection;
+  }
+  class Action // {
+    void act(){
     }
   }
 }

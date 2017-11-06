@@ -14,20 +14,21 @@ stateToken-s
 	[[^\\s]+] as NON_SPACE
 	[[^\\s\\[\\]]+] as NON_SPACE_OR_SQUARE
 	"n" as NNN
+	"\\" as BACKSLASH 
 
 stateBrace-s are Braced
 	[,.] as STATES_FILE with WILD as states_file_name
 	[{,}] as TRANSITION_ELEMENTS with ( NEWLINE+ | entry_element)*
 	[[,]] as TRANSITION_INDEX with (INTEGER NAME? | NAME) as transitionIndex
-	[/,/] as SPECIAL_DESCRIPTOR with special_descriptor
-	[,:] as CHOICE_NAME with ((SPACE|SPECIAL_DESCRIPTOR|NON_SPACE_OR_SQUARE) as descriptor* ) as choiceName
-special_descriptor
+	[/,/] as SPECIAL_DESCRIPTOR with special_descriptor?
+	[,:] as CHOICE_NAME with ((SPACE|BACKSLASH COLON as special_descriptor|SPECIAL_DESCRIPTOR as special_descriptor|NON_SPACE_OR_SQUARE) as descriptor* ) as choiceName
+special_descriptor is silent
 	NNN as newline
 	statement
 
 stateAltBrace-s are CharitableBraced
 	[,\n] as TOOL_TIP_LINE with WILD as toolTipLine
-	[,\n] as DESCRIPTION_LINE with ((SPACE|SPECIAL_DESCRIPTOR|NON_SPACE) as descriptor* ) as descriptionLine
+	[,\n] as DESCRIPTION_LINE with ((SPACE|BACKSLASH COLON as special_descriptor|SPECIAL_DESCRIPTOR as special_descriptor|NON_SPACE) as descriptor* ) as descriptionLine
 
 stateImport-s are Import
 	[><<\"states/\",states_file_name,\".states\">>\n] as IMPORT_STATES from (NEWLINE|COMMENTS|state_declaration)*; with STATES_FILE STATES
