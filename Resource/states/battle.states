@@ -1,23 +1,26 @@
 *** Battle ***
 [Start]
 	/battle.text/ /n/ /hero.name/ : /hero.hp/ // /hero.maxHp/
-if battle.monsters.size() > 0 : Attack /battle.monsters[0].name/ :-> [HeroEvent] { battle.event = hero.attack(battle.monsters[0]) }
-if battle.monsters.size() > 1 : Attack /battle.monsters[1].name/ :-> [HeroEvent] { battle.event = hero.attack(battle.monsters[1]) }
-if battle.monsters.size() > 2 : Attack /battle.monsters[2].name/ :-> [HeroEvent] { battle.event = hero.attack(battle.monsters[2]) }
+for 3 battle.monster/s : Attack /monster.name/ :-> [HeroEvent] { battle.event = hero.attack(monster) }
 
 [Continue]
-	/hero.name/ \: /hero.hp/ // /hero.maxHp/ /n/ vs
-if battle.monsters.size() > 0 :
-	/n/ /battle.monsters[0].name/
-if battle.monsters.size() > 1 :
-	/n/ /battle.monsters[1].name/
-if battle.monsters.size() > 2 :
-	/n/ /battle.monsters[2].name/
-if battle.monsters.size() > 0 : Attack /battle.monsters[0].name/ :-> [HeroEvent] { battle.event = hero.attack(battle.monsters[0]) }
-if battle.monsters.size() > 1 : Attack /battle.monsters[1].name/ :-> [HeroEvent] { battle.event = hero.attack(battle.monsters[1]) }
-if battle.monsters.size() > 2 : Attack /battle.monsters[2].name/ :-> [HeroEvent] { battle.event = hero.attack(battle.monsters[2]) }
+	/hero.name/ \: /hero.hp/ // /hero.maxHp/ Con \: /hero.con/ /n/vs
+each battle.monster/s :
+	/n/ /monster.name/ Hp \: /monster.hp/
+for 3 battle.monster/s : Attack /monster.name/ :-> [HeroEvent] { battle.event = hero.attack(monster) }
 
 [HeroEvent]
+	/battle.event.message/
+only if  battle.monsters.size() == 1 : Okay:-> [MonsterEvent] { battle.event = battle.monsters[0].attack(hero) }
+only if  battle.monsters.size() == 2 : Okay:-> [MonsterEvent] { 
+	battle.event = battle.monsters[0].attack(hero)
+	battle.event.message = battle.event.message + battle.monsters[1].attack(hero).message }
+only if  battle.monsters.size() == 3 : Okay:-> [MonsterEvent] { 
+	battle.event =                battle.monsters[0].attack(hero)
+	battle.event.message = battle.event.message + battle.monsters[1].attack(hero).message
+	battle.event.message = battle.event.message + battle.monsters[2].attack(hero).message }
+
+[MonsterEvent]
 	/battle.event.message/
 Enter:
 	{
@@ -29,32 +32,27 @@ Enter:
 	  battle.event.message = battle.event.message + battle.monsters[1].die()
 	  battle.monsters.remove(1)
 	}
-	if battle.monsters.size() > 0 & battle.monsters[1].isDead() {
+	if battle.monsters.size() > 0 & battle.monsters[0].isDead() {
 	  battle.event.message = battle.event.message + battle.monsters[0].die()
 	  battle.monsters.remove(0)
 	}
-	}
-
-if  battle.monsters.size() == 1 : Okay:-> [MonsterEvent] { battle.event = monsters[0].attack(hero) }
-if  battle.monsters.size() == 2 : Okay:-> [MonsterEvent] { 
-	battle.event = monsters[0].attack(hero)
-	battle.event = monsters[1].attack(hero) }
-if  battle.monsters.size() == 3 : Okay:-> [MonsterEvent] { 
-	battle.event = monsters[0].attack(hero)
-	battle.event = monsters[1].attack(hero)
-	battle.event = monsters[2].attack(hero) }
-
-[MonsterEvent]
-	/battle.event.message/
-Enter:
-	{
 	if hero.isDead() {
 	  battle.event.message = battle.event.message + hero.die()
 	} 
 	}
-if hero.isDead() : Game Over :-> GameOver[0]
-if hero.isDead() == false : Okay :->[Continue]
+only if hero.isDead() : Game Over :-> GameOver[0]
+only if hero.isDead() == false & battle.monsters.size() > 0 : Okay :->[Continue]
+only if hero.isDead() == false & battle.monsters.size() == 0 : Victory! :->[Victory]
 
+[Victory]
+	/battle.victory.message/
+Enter :
+	{
+	hero.exp = hero.exp + battle.rewards.exp
+	hero.items.addAll(battle.rewards.items)
+	}
+2.0s : Okay :-> |battle.victory.state|
 **** GameOver ****
 [0]
 	Game Over
+Restart :-> Start[0]

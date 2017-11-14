@@ -1,5 +1,11 @@
 < Font : \java.\awt;
 class 'packageName'."gui" GraphicsHandler {
+  
+  enum Justified //{
+    void LEFT;
+    void RIGHT;
+    void CENTER;
+  }
   Integer startX = 0;
   Integer startY = 0;
   ~int x = 0;
@@ -14,19 +20,39 @@ class 'packageName'."gui" GraphicsHandler {
   ~boolean cropWhiteSpace = true;
   ~int sectionX = 0;
   ~int sectionY = 0;
+  ~GraphicsHandler->Element->Text->Line currentLine = null;
+  ~Color defaultColour = Color.white;
+  ~Font defaultFont = new Font(''"Arial"'',Font.PLAIN, 12);
+  
+  ~GraphicsHandler->Element->Style currentStyle = new GraphicsHandler->Element->Style(Color.white, new Font(''"Arial"'',Font.PLAIN, 12)); 
   void sectionStart(){
     sectionX = x;
-    sectionY = y;
+    sectionY = y\-5;
   }
   MouseHandler sectionEnd(MouseHandler->Action onRelease,MouseHandler->Action onPress,MouseHandler->Action onHover){
-    MouseHandler result = new MouseHandler(startX, sectionY, startX\+width,y);
+    MouseHandler result = new MouseHandler(startX, sectionY, startX\+width,y\-5);
     result.setOnRelease(onRelease);
     result.setOnPress(onPress);
     result.setOnHover(onHover);
     elements.add(result.selection());
     return result;
   }
+  void styleStart(Color colour, Font font){
+    currentStyle = new GraphicsHandler->Element->Style(colour,font);
+  }
+  void styleEnd(){
+    currentStyle = new GraphicsHandler->Element->Style(defaultColour,defaultFont);
+  }
   void text(String newString){
+    this.text(newString, null, null);
+  }
+  void text(String newString, Color newColor){
+    this.text(newString, newColor, null);
+  }
+  void text(String newString, Font newFont){
+    this.text(newString, null, newFont);
+  }
+  void text(String newString, Color newColor, Font newFont){
     if cropWhiteSpace {
       int firstNonSpace = 0;
       while firstNonSpace < newString.length() {
@@ -46,14 +72,30 @@ class 'packageName'."gui" GraphicsHandler {
       x = startX;
       y \+= cHeight \+ yPad;
       cropWhiteSpace = true;
+      currentLine = new GraphicsHandler->Element->Text->Line(startX,y,width,cWidth,xPad);
+      elements.add(currentLine); 
     }
-    elements.add(new GraphicsHandler->Element->Text(newString,x,y));
+    if newColor == null && newFont == null {
+      GraphicsHandler->Element->Text newText = new GraphicsHandler->Element->Text(newString,x,y);
+      newText.setStyle(currentStyle);
+      currentLine.add(newText);
+    }
+    else {
+      GraphicsHandler->Element->Text newText = new GraphicsHandler->Element->Text(newString,x,y);
+      newText.setStyle(new GraphicsHandler->Element->Style(newColor,newFont));
+      currentLine.add(newText);
+    }
     x += newString.length()*cWidth\+xPad;
   }
   void newline(){
     x = startX;
     y \+= cHeight \+ 3;
     cropWhiteSpace = true;
+    currentLine = new GraphicsHandler->Element->Text->Line(startX,y,width,cWidth,xPad);
+    elements.add(currentLine);
+  }
+  void justify(Justified newJustify){
+    currentLine.setJustified(newJustify);
   }
   void display(Graphics g){
     GraphicsHandler->Element->Style style = null;
@@ -66,6 +108,8 @@ class 'packageName'."gui" GraphicsHandler {
     x = startX;
     y = startY;
     elements.add(new GraphicsHandler->Element->Style(Color.white));
+    currentLine = new GraphicsHandler->Element->Text->Line(startX,y,width,cWidth,xPad);
+    elements.add(currentLine); 
   }
   class Element // {
     GraphicsHandler->Element->Style display(Graphics g, GraphicsHandler->Element->Style s){
@@ -80,10 +124,17 @@ class 'packageName'."gui" GraphicsHandler {
       Style *(Font newFont){
         font = newFont;
       }
+      Style *(Color newColour, Font newFont){
+        colour = newColour;
+        font = newFont;
+      }
       GraphicsHandler->Element->Style display(Graphics g, GraphicsHandler->Element->Style s){
         if s != this {
           if colour != null {
             g.setColor(colour);
+          }
+          if font != null {
+            g.setFont(font);
           }
         }
         return this;
@@ -97,12 +148,66 @@ class 'packageName'."gui" GraphicsHandler {
       int length(){
         return text.length();
       }
+      void setX(int newX){
+        x = newX;
+      }
       GraphicsHandler->Element->Style display(Graphics g, GraphicsHandler->Element->Style s){
         if style != null {
           s = style.display(g,s);
         }
         g.drawString(text,x,y);
         return s;
+      }
+      class Line /GraphicsHandler->Element/ {
+        ~Justified justified = Justified.LEFT;
+        Integer startX = 0;
+        Integer y = 0;
+        Integer width = 0;
+        Integer cWidth = 0;
+        Integer xPad = 0;
+        ~List< Text > texts = new ArrayList< Text >();
+        void add(Text newText){
+          texts.add(newText);
+        }
+        GraphicsHandler->Element->Style display(Graphics g, GraphicsHandler->Element->Style s){
+          switch justified {
+            case "LEFT" {
+              for Text text: texts {
+                s = text.display(g,s); 
+              }
+              return s;
+            }
+            case "CENTER" {
+              int x = startX\+width/2;
+              for Text text: texts {
+                x \-= (text.length()*cWidth\+xPad)/2;
+              }
+              for Text text: texts {
+                int storedX = text.getX();
+                text.setX(x);
+                x \+= text.length()*cWidth\+xPad;
+                s = text.display(g,s);
+                text.setX(storedX);
+              }
+              return s;
+            }
+            case "RIGHT" {
+              int x = startX\+width;
+              for Text text: texts {
+                x \-= text.length()*cWidth\+xPad;
+              }
+              for Text text: texts {
+                int storedX = text.getX();
+                text.setX(x);
+                x \+= text.length()*cWidth\+xPad;
+                s = text.display(g,s);
+                text.setX(storedX);
+              }
+              return s;
+            }
+          }
+          return s;
+        }
       }
     }
     class Selection /GraphicsHandler->Element/ {

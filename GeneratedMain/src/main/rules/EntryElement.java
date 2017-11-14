@@ -23,10 +23,14 @@ public class EntryElement extends ConcreteRule {
 								
 								new ChainParser(
 									StateTokens.TRANSITION_ARROW,
-									new OptionalParser(
-											new AddTokenParser(
-												GeneralTokens.NAME,"transitionStateName")),
-									StateBraces.TRANSITION_INDEX),"transition")),
+									
+									new ChoiceParser(
+											StateBraces.STATE_STATEMENT,
+										new ChainParser(
+											new OptionalParser(
+													new AddTokenParser(
+														GeneralTokens.NAME,"transitionStateName")),
+											StateBraces.TRANSITION_INDEX))),"transition")),
 					new OptionalParser(
 							StateBraces.TRANSITION_ELEMENTS)),
 				new ChainParser(
@@ -35,13 +39,19 @@ public class EntryElement extends ConcreteRule {
 					new AddTokenParser(
 						GeneralTokens.NAME,"newVariable"),
 					GeneralTokens.EQUALSIGN,
-					Rules.statement),
+					
+					new ChoiceParser(
+							StateBraces.DYNAMIC_STATE_NAME,
+							Rules.statement)),
 				new ChainParser(
 					GeneralTokens.PLUS,
 					new AddTokenParser(
 						GeneralTokens.NAME,"newVariable"),
 					GeneralTokens.EQUALSIGN,
-					Rules.statement),
+					
+					new ChoiceParser(
+							StateBraces.DYNAMIC_STATE_NAME,
+							Rules.statement)),
 				new ChainParser(
 					new AddTokenParser(
 						GeneralTokens.NAME,"variableName"),
@@ -52,26 +62,20 @@ public class EntryElement extends ConcreteRule {
 									new AddTokenParser(
 										GeneralTokens.NAME,"variableName"))),
 					GeneralTokens.EQUALSIGN,
-					Rules.statement),
-				new ChainParser(
-					new AddTokenParser(
-						GeneralTokens.NAME,"variableName"),
-					new ManyParser(
-							
-								new ChainParser(
-									GeneralTokens.DOT,
-									new AddTokenParser(
-										GeneralTokens.NAME,"variableName"))),
 					
-						new ChainParser(
-							GeneralTokens.SLASH,
-							new AddTokenParser(
-								GeneralTokens.NAME,"pluralizer")),
+					new ChoiceParser(
+							StateBraces.DYNAMIC_STATE_NAME,
+							Rules.statement)),
+				new ChainParser(
+					Rules.state_list_name,
 					
 					new ChoiceParser(
 							GeneralTokens.PLUSEQUALS,
 							GeneralTokens.MINUSEQUALS),
-					Rules.statement),
+					
+					new ChoiceParser(
+							StateBraces.DYNAMIC_STATE_NAME,
+							Rules.statement)),
 					GeneralBraces.BODY));
 
 	}

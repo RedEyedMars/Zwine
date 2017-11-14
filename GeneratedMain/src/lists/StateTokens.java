@@ -22,6 +22,11 @@ public class StateTokens extends ParseList {
 	public static final ExactParser ENTER = new ExactParser("ENTER","stateTokens","Enter");
 	public static final ExactParser EXIT = new ExactParser("EXIT","stateTokens","Exit");
 	public static final ExactParser STATES = new ExactParser("STATES","stateTokens","states");
+	public static final ExactParser EACH = new ExactParser("EACH","stateTokens","each ");
+	public static final ExactParser FOR = new ExactParser("FOR","stateTokens","for ");
+	public static final ExactParser ONLY = new ExactParser("ONLY","stateTokens","only ");
+	public static final ExactParser MS = new ExactParser("MS","stateTokens","ms");
+	public static final ExactParser SSS = new ExactParser("SSS","stateTokens","s");
 	public static final ExactParser TRANSITION_ARROW = new ExactParser("TRANSITION_ARROW","stateTokens","->");
 	public static final ExactParser STATE_NAME = new ExactParser("STATE_NAME","stateTokens","*");
 	public static final RegexParser SPACE = new RegexParser("SPACE","stateTokens","[ \\t]+");
@@ -31,5 +36,5 @@ public class StateTokens extends ParseList {
 	public static final ExactParser BACKSLASH = new ExactParser("BACKSLASH","stateTokens","\\");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				TOOL_TIP,NEWTLINE,TAB,SEMICOLON,ENTER,EXIT,STATES,TRANSITION_ARROW,STATE_NAME,SPACE,NON_SPACE,NON_SPACE_OR_SQUARE,NNN,BACKSLASH);
+				TOOL_TIP,NEWTLINE,TAB,SEMICOLON,ENTER,EXIT,STATES,EACH,FOR,ONLY,MS,SSS,TRANSITION_ARROW,STATE_NAME,SPACE,NON_SPACE,NON_SPACE_OR_SQUARE,NNN,BACKSLASH);
 }

@@ -52,7 +52,17 @@ public class StateBraces extends ParseList {
 													new AddTokenParser(
 														StateBraces.SPECIAL_DESCRIPTOR,"special_descriptor"),
 													StateTokens.NON_SPACE_OR_SQUARE),"descriptor")),"choiceName"),"CHOICE_NAME","stateBraces",",:");
+	public static final BracedParser STATE_STATEMENT = new BracedParser(
+							new AddTokenParser(
+								Rules.statement,"state_statement"),"STATE_STATEMENT","stateBraces","|,|");
+	public static final BracedParser DYNAMIC_STATE_NAME = new BracedParser(
+						new ChainParser(
+							new OptionalParser(
+									new AddTokenParser(
+										GeneralTokens.NAME,"transitionStateName")),
+							new AddTokenParser(
+								StateBraces.TRANSITION_INDEX,"state_name")),"DYNAMIC_STATE_NAME","stateBraces","|,|");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				STATES_FILE,TRANSITION_ELEMENTS,TRANSITION_INDEX,SPECIAL_DESCRIPTOR,CHOICE_NAME);
+				STATES_FILE,TRANSITION_ELEMENTS,TRANSITION_INDEX,SPECIAL_DESCRIPTOR,CHOICE_NAME,STATE_STATEMENT,DYNAMIC_STATE_NAME);
 }

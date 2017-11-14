@@ -9,22 +9,22 @@ String die(){
   return name +" has died!"
 }
 boolean isDead() {
-  return hp < 0 
+  return hp <= 0 
 }
 BattleEvent attack(Entity toAttack){
   if dex - toAttack.dex > 0 {
-    if random() > (dex - toAttack.dex)*0.1 {
-      return new MissEvent(name + " attack misses!")
+    if random() < (dex - toAttack.dex)*0.1 {
+      return new MissEvent(name + "'s attack misses!")
     }
   }
   else {
-    if random() > 0.1 {
-      return new MissEvent(name + " attack misses!")
+    if random() < 0.3 {
+      return new MissEvent(name + "'s attack misses!")
     }
   }
   if str - toAttack.con > 0 {
     toAttack.hp = toAttack.hp - str + toAttack.con
-    return new HitEvent(name + " does " + (toAttack.con - str) + " damage to " + toAttack.name)
+    return new HitEvent(name + " does " + (str - toAttack.con) + " damage to " + toAttack.name)
   }
   else {
     toAttack.hp = toAttack.hp - 1
@@ -35,6 +35,8 @@ BattleEvent attack(Entity toAttack){
 ****** Hero ******
 [Entity]
 friend/s = Hero[]
+exp = 0
+item/s = Item[]
 
 ***** Monster ****
 [Entity]

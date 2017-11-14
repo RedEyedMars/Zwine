@@ -162,6 +162,10 @@ public class MainFlow extends FlowController  {
 			if(__element__KEY.getName().equals("variable_declaration")){ final IToken element = elementToken.get(__element__KEY);
 				return MainFlow.methods.getStateVariableDeclaration(element,context);
 			}
+			if(__element__KEY.getName().equals("assignment")){ final IToken element = elementToken.get(__element__KEY);
+				return /*InCl*/new ExternalStatement(
+		/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement(null,new StringEntry(")"),"(",/*InCl*/new ExternalStatement(MainFlow.methods.getStateSetVariableCall(element.get("variable_call"),context)),new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(MainFlow.methods.getStateStatement(element.get("statement"),context)))))))));
+			}
 			if(__element__KEY.getName().equals("if_statement")){ final IToken element = elementToken.get(__element__KEY);
 				return MainFlow.methods.getStateIfStatement(element,context);
 			}
@@ -387,11 +391,19 @@ public class MainFlow extends FlowController  {
 				if (currentContext == null) {
 				throw new RuntimeException("Could not find "+element.toString()+" variable in context!");
 				}
-				if (ret.size() == 0 ) {
-				ret.add(/*Optr*/new ExternalStatement(".", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry("State"))))), /*Call*/new ExternalStatement("",
+				if (element.toString().equals("this")) {
+				ret.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("this")))));
+				}
+				else if (ret.size() == 0 ) {
+				if (MainFlow.classes.StateClass.DataClass.getContext().hasLink(element.toString())) {
+					ret.add(/*Optr*/new ExternalStatement(".", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry("State"))))), /*Call*/new ExternalStatement("",
 			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("data"))), /*Enty*/new ExternalStatement(new StringEntry("get"+FlowController.camelize(element.toString()).toString()))),
 			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
 			 		new ExternalStatement.Parameters()))));
+				}
+				else  {
+					ret.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(element.toString())))));
+				}
 				}
 				else  {
 				ret.add(/*Name*/new ExternalStatement(/*Call*/new ExternalStatement(null,new StringEntry(")"),"(",/*Enty*/new ExternalStatement(new StringEntry("get"+FlowController.camelize(element.toString()).toString())),new ExternalStatement.Parameters())));
@@ -408,6 +420,136 @@ public class MainFlow extends FlowController  {
 				final ExternalStatement.Parameters parameters = new ExternalStatement.Parameters();
 				for(final IToken atom:element.getAllSafely("statement")) {
 					parameters.add(MainFlow.methods.getStateStatement(atom,context));
+				}
+				if (element.get("NEW") != null) {
+				currentContext = currentContext.getClassContext(methodName);
+				if (currentContext == null) {
+					throw new RuntimeException("Could not find \"+methodName+\" type in context!");
+				}
+				ret.add(/*Name*/new ExternalStatement(/*NObj*/new ExternalStatement.NewObject(/*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(/*Enty*/new ExternalStatement(new StringEntry(methodName.toString())))),new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(parameters)))))));
+				}
+				else  {
+				currentContext = currentContext.link(methodName);
+				if (currentContext == null) {
+					throw new RuntimeException("Could not find "+element.toString()+" method in context!");
+				}
+				ret.add(/*Name*/new ExternalStatement(/*Call*/new ExternalStatement(null,new StringEntry(")"),"(",/*Enty*/new ExternalStatement(new StringEntry(element.toString())),new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(parameters)))))));
+				}
+			}
+		}
+		if (currentContext != null && currentContext.hasEnder()) {
+			ret.add(currentContext.getEnder());
+		}
+		return ret;
+	}
+	public ExternalStatement getStateSetVariableCall(final IToken variableCallToken,final ExternalContext context)  {
+		ExternalContext currentContext = context;
+		final ExternalStatement ret = new ExternalStatement(".");
+		Integer callCount = -1;
+		for(IToken.Key __element__KEY:variableCallToken.keySet()) {
+			if(__element__KEY.getName().equals("range")){ final IToken element = variableCallToken.get(__element__KEY);
+				callCount += 1;
+			}
+			if(__element__KEY.getName().equals("braced")){ final IToken element = variableCallToken.get(__element__KEY);
+				callCount += 1;
+			}
+			if(__element__KEY.getName().equals("exact")){ final IToken element = variableCallToken.get(__element__KEY);
+				callCount += 1;
+			}
+			if(__element__KEY.getName().equals("quote")){ final IToken element = variableCallToken.get(__element__KEY);
+				callCount += 1;
+			}
+			if(__element__KEY.getName().equals("cast")){ final IToken element = variableCallToken.get(__element__KEY);
+				callCount += 1;
+			}
+			if(__element__KEY.getName().equals("variableName")){ final IToken element = variableCallToken.get(__element__KEY);
+				callCount += 1;
+			}
+			if(__element__KEY.getName().equals("method")){ final IToken element = variableCallToken.get(__element__KEY);
+				callCount += 1;
+			}
+		}
+		for(IToken.Key __element__KEY:variableCallToken.keySet()) {
+			if(__element__KEY.getName().equals("range")){ final IToken element = variableCallToken.get(__element__KEY);
+				ret.add(/*Name*/new ExternalStatement(/*NObj*/new ExternalStatement.NewObject(/*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry("Range"))),new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(element.get("left").toString())))),/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(element.get("right").toString()))))))));
+			}
+			if(__element__KEY.getName().equals("braced")){ final IToken element = variableCallToken.get(__element__KEY);
+				final ExternalStatement subStatement = MainFlow.methods.getStatement(element,context);
+				subStatement.brace();
+				ret.add(subStatement);
+			}
+			if(__element__KEY.getName().equals("exact")){ final IToken element = variableCallToken.get(__element__KEY);
+				if (element.get("FLOAT") != null) {
+				ret.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(/*Concat*/new ExternalStatement("", /*Enty*/new ExternalStatement(new StringEntry(element.toString())), /*Name*/new ExternalStatement(new StringEntry("f")))))));
+				}
+				else  {
+				ret.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(element.toString())))));
+				}
+			}
+			if(__element__KEY.getName().equals("quote")){ final IToken element = variableCallToken.get(__element__KEY);
+				ret.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Quot*/new ExternalStatement(new QuoteEntry(element.toString())))));
+			}
+			if(__element__KEY.getName().equals("cast")){ final IToken element = variableCallToken.get(__element__KEY);
+				final String typeName = MainFlow.methods.getTypeName(element.get("type_name"));
+				final ExternalContext typeContext = currentContext.getClassContext(typeName);
+				if (typeContext == null) {
+				throw new RuntimeException("Could not find "+typeName.toString()+" type in context!");
+				}
+				final ExternalStatement castStatement = new ExternalStatement();
+				castStatement.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(/*Enty*/new ExternalStatement(new StringEntry(typeName.toString())))))));
+				castStatement.brace();
+				final ExternalStatement fullStatement = new ExternalStatement();
+				fullStatement.add(castStatement);
+				fullStatement.add(MainFlow.methods.getStatement(element.get("statement"),context));
+				ret.add(fullStatement);
+			}
+			if(__element__KEY.getName().equals("variableName")){ final IToken element = variableCallToken.get(__element__KEY);
+				currentContext = currentContext.link(element.toString());
+				if (currentContext == null) {
+				throw new RuntimeException("Could not find "+element.toString()+" variable in context!");
+				}
+				if (ret.size() == 0 ) {
+				if (MainFlow.classes.StateClass.DataClass.getContext().hasLink(element.toString())) {
+					if (ret.size() == callCount) {
+						ret.add(/*Optr*/new ExternalStatement(".", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry("State"))))), /*Call*/new ExternalStatement("",
+			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("data"))), /*Enty*/new ExternalStatement(new StringEntry("set"+FlowController.camelize(element.toString()).toString()))),
+			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
+			 		new ExternalStatement.Parameters()))));
+					}
+					else  {
+						ret.add(/*Optr*/new ExternalStatement(".", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry("State"))))), /*Call*/new ExternalStatement("",
+			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("data"))), /*Enty*/new ExternalStatement(new StringEntry("get"+FlowController.camelize(element.toString()).toString()))),
+			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
+			 		new ExternalStatement.Parameters()))));
+					}
+				}
+				else  {
+					if (ret.size() == callCount) {
+						ret.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry("set"+FlowController.camelize(element.toString()).toString())))));
+					}
+					else  {
+						ret.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(element.toString())))));
+					}
+				}
+				}
+				else if (ret.size() == callCount) {
+				ret.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry("set"+FlowController.camelize(element.toString()).toString())))));
+				}
+				else  {
+				ret.add(/*Name*/new ExternalStatement(/*Call*/new ExternalStatement(null,new StringEntry(")"),"(",/*Enty*/new ExternalStatement(new StringEntry("get"+FlowController.camelize(element.toString()).toString())),new ExternalStatement.Parameters())));
+				}
+			}
+			if(__element__KEY.getName().equals("method")){ final IToken element = variableCallToken.get(__element__KEY);
+				final String methodName;
+				if (element.get("methodName") != null) {
+				methodName = element.get("methodName").toString();
+				}
+				else  {
+				methodName = MainFlow.methods.getTypeName(element.get("type_name"));
+				}
+				final ExternalStatement.Parameters parameters = new ExternalStatement.Parameters();
+				for(final IToken atom:element.getAllSafely("statement")) {
+					parameters.add(MainFlow.methods.getStatement(atom,context));
 				}
 				if (element.get("NEW") != null) {
 				currentContext = currentContext.getClassContext(methodName);
@@ -571,6 +713,29 @@ acceptingClass.addMethod(new ExternalMethodEntry(1, false,/*TypeName*/new Extern
 			"catch ", 
 			/*Optr*/new ExternalStatement(" ", /*Exac*/new ExternalStatement(new StringEntry("Exception")), /*Exac*/new ExternalStatement(new StringEntry("e0"))),
 			/*Body*/new ExternalStatement.Body())));
+MainFlow.classes.StateClass.DataClass.VariablesClass.addVariable(new ExternalVariableEntry(false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(/*Enty*/new ExternalStatement(new StringEntry(type.toString())))),"", /*Enty*/new ExternalStatement(new StringEntry(name.toString())), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("null"))))));
+		if (name.equals("__TIMER__")) {
+			MainFlow.classes.StateClass.DataClass.acceptSwitchBody.add(/*InCl*/new ExternalStatement(
+		/*Case*/new ExternalStatement.Conditional(
+			"case ", 
+			/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(name.toString())))),
+			/*Body*/new ExternalStatement.Body(
+			/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement(null,new StringEntry(")"),"(",/*Enty*/new ExternalStatement(new StringEntry("set"+FlowController.camelize(name.toString()).toString())),new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Cast*/new ExternalStatement("",new ExternalStatement(new StringEntry("("),new StringEntry(")"),"", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(type.toString()))))), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("toSet")))))))))),
+/*BODY*/				
+			/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*BrOp*/new ExternalStatement("",new ExternalStatement(new StringEntry("("),new StringEntry(")"),"", /*Name*/new ExternalStatement(/*Cast*/new ExternalStatement("",new ExternalStatement(new StringEntry("("),new StringEntry(")"),"", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(type.toString()))))), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("toSet"))))))), new ExternalStatement("."), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement(null,new StringEntry(")"),"(",/*Name*/new ExternalStatement(new StringEntry("start")),new ExternalStatement.Parameters()))))),
+/*BODY*/				
+			/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("break"))))))).setBraces("",":")));
+		}
+		else  {
+			MainFlow.classes.StateClass.DataClass.acceptSwitchBody.add(/*InCl*/new ExternalStatement(
+		/*Case*/new ExternalStatement.Conditional(
+			"case ", 
+			/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(name.toString())))),
+			/*Body*/new ExternalStatement.Body(
+			/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement(null,new StringEntry(")"),"(",/*Enty*/new ExternalStatement(new StringEntry("set"+FlowController.camelize(name.toString()).toString())),new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Cast*/new ExternalStatement("",new ExternalStatement(new StringEntry("("),new StringEntry(")"),"", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(type.toString()))))), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("toSet")))))))))),
+/*BODY*/				
+			/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("break"))))))).setBraces("",":")));
+		}
 	}
 	public Map<String,List<String>> getClassIdentifierMap()  {
 		return __VAR__classIdentifierMap;

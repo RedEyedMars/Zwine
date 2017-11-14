@@ -39,12 +39,15 @@ public class Rulenames extends ParseList {
 	public static final RegexParser special_descriptor = new RegexParser("special_descriptor","rulenames","special_descriptor");
 	public static final RegexParser state_declaration = new RegexParser("state_declaration","rulenames","state_declaration");
 	public static final RegexParser state_element = new RegexParser("state_element","rulenames","state_element");
+	public static final RegexParser description_condition = new RegexParser("description_condition","rulenames","description_condition");
+	public static final RegexParser choice_condition = new RegexParser("choice_condition","rulenames","choice_condition");
 	public static final RegexParser entry_element = new RegexParser("entry_element","rulenames","entry_element");
+	public static final RegexParser state_list_name = new RegexParser("state_list_name","rulenames","state_list_name");
 	public static final RegexParser choice_element = new RegexParser("choice_element","rulenames","choice_element");
 	public static final RegexParser event_declaration = new RegexParser("event_declaration","rulenames","event_declaration");
 	public static final RegexParser class_declaration = new RegexParser("class_declaration","rulenames","class_declaration");
 	public static final RegexParser class_element = new RegexParser("class_element","rulenames","class_element");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				base,import_any,num,range,operator,body_element,if_statement,for_statement,while_statement,boolean_statement,boolean_element,has_chance,return_statement,statement,variable_declaration,variable_header,variable_call,method,type_name,image_extension,image_declaration,special_descriptor,state_declaration,state_element,entry_element,choice_element,event_declaration,class_declaration,class_element);
+				base,import_any,num,range,operator,body_element,if_statement,for_statement,while_statement,boolean_statement,boolean_element,has_chance,return_statement,statement,variable_declaration,variable_header,variable_call,method,type_name,image_extension,image_declaration,special_descriptor,state_declaration,state_element,description_condition,choice_condition,entry_element,state_list_name,choice_element,event_declaration,class_declaration,class_element);
 }

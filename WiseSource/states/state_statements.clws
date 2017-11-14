@@ -17,6 +17,9 @@
 	  : variable_declaration {
 	    return \getStateVariableDeclaration(element, context);
 	  }
+	  : assignment {
+	    return |`\getStateSetVariableCall(element->"variable_call", context)`(`\getStateStatement(element->"statement", context)`);|;
+	  }
       : if_statement {
         return \getStateIfStatement(element, context);
       }
@@ -208,8 +211,16 @@
 		if currentContext == null {
 		    throw "Could not find "+'element'+" variable in context!";
 		}
-		if  ret.size() == 0 {
-		  ret.add(|State."data".'"get"+^element'()|);
+		if 'element'.equals("this") {
+		  ret.add(|"this"|);
+		}
+		else if  ret.size() == 0 {
+		  if State->Data.getContext().hasLink('element') {
+		    ret.add(|State."data".'"get"+^element'()|);
+		  }
+		  else {
+		    ret.add(|'element'|);
+		  }
 		}
 		else {
 		  ret.add(|'"get"+^element'()|); #MIGHT HAVE TO IMPLEMENT ^'X'#
@@ -227,6 +238,117 @@
 		element : atom
 		  : statement {
 			parameters.add(\getStateStatement(atom,context));
+		  }
+		if element->"NEW" != null {
+          currentContext = currentContext.getClassContext(methodName);
+		  if currentContext == null {
+		    throw "Could not find \"+methodName+\" type in context!";
+		  }
+		  ret.add(|new 'methodName'(`parameters`)|);
+		}
+	  	else {
+		  currentContext = currentContext.link(methodName);
+		  if currentContext == null {
+		    throw "Could not find "+'element'+" method in context!";
+		  }
+		  ret.add(|'element'(`parameters`)|);
+		}
+	  }
+	if currentContext != null && currentContext.hasEnder() {
+	  ret.add(currentContext.getEnder());
+	}
+	return ret;
+  }
+
+> Statement getStateSetVariableCall(IToken variableCallToken, Context context){
+	~Context currentContext = context;
+	Statement ret = new Statement(".");
+	~Integer callCount = -1;
+	variableCallToken : element
+	  : range {  callCount \+= 1; }
+	  : braced { callCount \+= 1; }
+	  : exact {  callCount \+= 1; }
+	  : quote {  callCount \+= 1; }
+	  : cast {   callCount \+= 1; }
+	  : variableName { callCount \+= 1; }
+	  : method { callCount \+= 1; }
+	variableCallToken : element
+	  : range {
+	    ret.add(|new Range('element->"left"','element->"right"')|);
+	  }
+	  : braced {
+		Statement subStatement = \getStatement(element,context);
+		subStatement.brace();
+		ret.add(subStatement);
+	  }
+	  : exact {
+	    if element->"FLOAT" != null {
+	      ret.add(|'element'+"f"|);
+	    }
+	    else {
+	      ret.add(|'element'|);
+	    }
+	  }
+	  : quote {
+	    ret.add(|''element''|);
+	  }
+	  : cast {
+	    String typeName = \getTypeName(element->"type_name");
+	    Context typeContext = currentContext.getClassContext(typeName);
+	    if typeContext == null {
+		    throw "Could not find "+'typeName'+" type in context!";
+		}
+		
+	    Statement castStatement = new Statement ();
+	    castStatement.add(|$'typeName'|);
+	    castStatement.brace();
+	    Statement fullStatement = new Statement();
+	    fullStatement.add(castStatement);
+	    fullStatement.add(\getStatement(element->"statement",context));
+		ret.add(fullStatement);
+	  }
+	  : variableName {
+	  	currentContext = currentContext.link('element'); 
+		if currentContext == null {
+		    throw "Could not find "+'element'+" variable in context!";
+		}
+		if  ret.size() == 0 {
+		  if State->Data.getContext().hasLink('element') {
+		    if ret.size() == callCount {
+		      ret.add(|State."data".'"set"+^element'()|);
+		    }
+		    else {
+		      ret.add(|State."data".'"get"+^element'()|);
+		    }
+		  }
+		  else {
+		    if ret.size() == callCount {
+		      ret.add(|'"set"+^element'|);
+		    }
+		    else {
+		      ret.add(|'element'|);
+		    }
+		  }
+		}
+		else if ret.size() == callCount {
+		  ret.add(|'"set"+^element'|);
+		}
+		else {
+		  ret.add(|'"get"+^element'()|);
+		}
+	  }
+	  : method {
+		String methodName;
+		if element->"methodName" != null {
+		  methodName = 'element->"methodName"';
+		}
+		else {
+		  methodName = \getTypeName(element->"type_name");
+		}
+		Parameters parameters = new Parameters();
+		element : atom
+		  : statement {
+			parameters.add(\getStatement(atom,context));
 		  }
 		if element->"NEW" != null {
           currentContext = currentContext.getClassContext(methodName);
@@ -332,4 +454,11 @@
         }
         catch * {}
       });
+    State->Data->Variables += 'type' 'name' = null
+    if name.equals("__TIMER__") {
+      State->Data.acceptSwitchBody.add(|case 'name' { '"set"+^name'(('type')"toSet"); (('type')"toSet")."start"(); "break";}|);
+    }
+    else {
+      State->Data.acceptSwitchBody.add(|case 'name' { '"set"+^name'(('type')"toSet");  "break";}|);
+    }
   }

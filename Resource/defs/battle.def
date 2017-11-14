@@ -1,8 +1,17 @@
 ****** Battle ******
 text = "#NO_DESCRIPTION"
 monster/s = Monster[]
-State returnState = null
 BattleEvent event = null
+Rewards rewards = new Rewards()
+Victory victory = new Victory()
+
+**** Rewards ****
+exp = 0
+item/s = Item[]
+
+**** Victory ****
+message = "#NO_MESSAGE"
+State state = null
 
 **** BattleEvent ****
 message = "#NO_MESSAGE"

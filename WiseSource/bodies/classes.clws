@@ -24,7 +24,7 @@
   }
 > void declaration(IToken declaration){
     String newClassName = ^declaration->"className";
-    Long randomSerial = new Random("Hero".hashCode()).nextLong();
+    Long randomSerial = new Random(newClassName.hashCode()).nextLong();
     String serialValue = randomSerial\+"L";
     String finalLong = "final long";
     class 'packageName'."defs" newClassName Object Serializable {

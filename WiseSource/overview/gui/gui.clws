@@ -6,9 +6,13 @@ class 'packageName'."gui" Gui JFrame{
 > Set<String> imageLoaders = new HashSet<String>();
 > void setup(){
     GraphicsHandler->*.appendToBody({
-      "x" = "startX";
-      "y" = "startY";
-      "elements".add(new GraphicsHandler->Element->Style(Color.white));});
+      \clear();});
+    State->Timer->*.appendToBody({
+      if startTime == -1 {
+        startTime = System.currentTimeMillis();
+      }
+      this.start();});
+    \addStorageElement("State.Timer", "__TIMER__", State->Data);
   }
 > void image_declaration(IToken declaration){
     String imageId = 'declaration->"imageId"';
@@ -69,6 +73,9 @@ class 'packageName'."gui" Gui JFrame{
     }
     if Gui.refresher != null {
       Gui.refresher.end();
+    }
+    if State."data".get_TIMER() != null {
+      State."data".get_TIMER().end();
     }
     if State.data != null {
       State.data.write('' "./res/saves/onEnd.save" '');

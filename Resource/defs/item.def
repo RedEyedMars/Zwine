@@ -1,0 +1,6 @@
+***** Item *****
+name = "#NO_ITEM_NAME"
+
+***** SlimeItem ****
+[Item]
+name = "Slime"

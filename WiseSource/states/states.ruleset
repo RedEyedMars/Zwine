@@ -8,13 +8,18 @@ stateToken-s
 	"Enter" as ENTER
 	"Exit" as EXIT
 	"states" as STATES
+	"each " as EACH
+	"for " as FOR
+	"only " as ONLY
+	"ms" as MS
+	"s" as SSS
 	"->" as TRANSITION_ARROW
 	"*" as STATE_NAME
 	[[ \\t]+] as SPACE
 	[[^\\s]+] as NON_SPACE
 	[[^\\s\\[\\]]+] as NON_SPACE_OR_SQUARE
 	"n" as NNN
-	"\\" as BACKSLASH 
+	"\\" as BACKSLASH
 
 stateBrace-s are Braced
 	[,.] as STATES_FILE with WILD as states_file_name
@@ -22,6 +27,8 @@ stateBrace-s are Braced
 	[[,]] as TRANSITION_INDEX with (INTEGER NAME? | NAME) as transitionIndex
 	[/,/] as SPECIAL_DESCRIPTOR with special_descriptor?
 	[,:] as CHOICE_NAME with ((SPACE|BACKSLASH COLON as special_descriptor|SPECIAL_DESCRIPTOR as special_descriptor|NON_SPACE_OR_SQUARE) as descriptor* ) as choiceName
+	[|,|] as STATE_STATEMENT with statement as state_statement
+	[|,|] as DYNAMIC_STATE_NAME with NAME as transitionStateName? TRANSITION_INDEX as state_name
 special_descriptor is silent
 	NNN as newline
 	statement
@@ -38,15 +45,25 @@ state_declaration
 	STATE_NAME+ NAME as stateName STATE_NAME+ NEWLINE* ( TRANSITION_INDEX NEWTLINE* ( state_element NEWLINE* )* ) as subState*
 state_element is silent
 	( ( ENTER | EXIT ) NEWLINE* COLON NEWLINE* entry_element? NEWTLINE* ((TAB|SEMICOLON) entry_element NEWTLINE* )* SEMICOLON? ) as stateChange 
-	( (IF boolean_statement ( NEWLINE* COLON NEWTLINE* | NEWTLINE+ ) )? ( TAB DESCRIPTION_LINE NEWTLINE*)+ )  as stateDescription SEMICOLON?
-	( (IF boolean_statement ( NEWLINE* COLON NEWTLINE* | NEWTLINE+ ) )? NEWLINE* CHOICE_NAME NEWLINE* choice_element? NEWTLINE* ( (TAB|SEMICOLON) choice_element NEWTLINE*)* ) as stateChange SEMICOLON?
+	( description_condition? ( TAB DESCRIPTION_LINE NEWTLINE*)+ )  as stateDescription SEMICOLON?
+	( choice_condition? NEWLINE* (( FLOAT as timedChoiceName (SSS | MS) COLON ) | CHOICE_NAME ) NEWLINE* choice_element? NEWTLINE* ( (TAB|SEMICOLON) choice_element NEWTLINE*)* ) as stateChange SEMICOLON?
+description_condition
+	IF boolean_statement  ( NEWLINE* COLON NEWTLINE* | NEWTLINE+ )
+	FLOAT as timed (SSS | MS) ( NEWLINE* COLON NEWTLINE* | NEWTLINE+ ) 
+	EACH state_list_name  ( NEWLINE* COLON NEWTLINE* | NEWTLINE+ )
+choice_condition
+	ONLY? IF boolean_statement  ( NEWLINE* COLON NEWTLINE* | NEWTLINE+ )
+	ONLY? FLOAT as timed (SSS | MS) ( NEWLINE* COLON NEWTLINE* | NEWTLINE+ ) 
+	FOR INTEGER as maxIndex state_list_name ( NEWLINE* COLON NEWTLINE* | NEWTLINE+ )
 entry_element
-	( TRANSITION_ARROW NAME as transitionStateName? TRANSITION_INDEX ) as transition+ TRANSITION_ELEMENTS?
-	PLUS type_name NAME as newVariable EQUALSIGN statement
-	PLUS           NAME as newVariable EQUALSIGN statement
-	NAME as variableName  ( DOT NAME as variableName )* EQUALSIGN statement
-	NAME as variableName  ( DOT NAME as variableName )* ( SLASH NAME as pluralizer ) ( PLUSEQUALS | MINUSEQUALS )  statement
+	(  TRANSITION_ARROW (FLOAT as timed (SSS | MS))? (STATE_STATEMENT | NAME as transitionStateName? TRANSITION_INDEX) ) as transition+ TRANSITION_ELEMENTS?
+	PLUS type_name NAME as newVariable EQUALSIGN ( DYNAMIC_STATE_NAME | statement )
+	PLUS           NAME as newVariable EQUALSIGN ( DYNAMIC_STATE_NAME | statement )
+	NAME as variableName  ( DOT NAME as variableName )* EQUALSIGN ( DYNAMIC_STATE_NAME | statement )
+	state_list_name ( PLUSEQUALS | MINUSEQUALS )  ( DYNAMIC_STATE_NAME | statement )
 	BODY
+state_list_name
+	NAME as variableName  ( DOT NAME as variableName )* ( SLASH NAME as pluralizer )
 choice_element is silent
 	TOOL_TIP ( NEWTABTAB ( TOOL_TIP_LINE | NEWLINE+ )+ )+
 	entry_element

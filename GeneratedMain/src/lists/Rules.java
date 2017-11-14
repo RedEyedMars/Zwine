@@ -40,12 +40,15 @@ public class Rules extends ParseList {
 	public static final IRule special_descriptor = SpecialDescriptor.parser;
 	public static final IRule state_declaration = StateDeclaration.parser;
 	public static final IRule state_element = StateElement.parser;
+	public static final IRule description_condition = DescriptionCondition.parser;
+	public static final IRule choice_condition = ChoiceCondition.parser;
 	public static final IRule entry_element = EntryElement.parser;
+	public static final IRule state_list_name = StateListName.parser;
 	public static final IRule choice_element = ChoiceElement.parser;
 	public static final IRule event_declaration = EventDeclaration.parser;
 	public static final IRule class_declaration = ClassDeclaration.parser;
 	public static final IRule class_element = ClassElement.parser;
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				base,import_any,num,range,operator,body_element,if_statement,for_statement,while_statement,boolean_statement,boolean_element,has_chance,return_statement,statement,variable_declaration,variable_header,variable_call,method,type_name,image_extension,image_declaration,special_descriptor,state_declaration,state_element,entry_element,choice_element,event_declaration,class_declaration,class_element);
+				base,import_any,num,range,operator,body_element,if_statement,for_statement,while_statement,boolean_statement,boolean_element,has_chance,return_statement,statement,variable_declaration,variable_header,variable_call,method,type_name,image_extension,image_declaration,special_descriptor,state_declaration,state_element,description_condition,choice_condition,entry_element,state_list_name,choice_element,event_declaration,class_declaration,class_element);
 }

@@ -5,13 +5,34 @@
 	Feeling the dank air clinging to your lungs.
 	As your eyes adjust, you realize you are in a dark corridor.
 	/n/ What do you do? /hero.name/
-Enter: + hero = new Hero()
+Enter:
+	hero = null 
+	battle = null
+	+ hero = new Hero()
 	hero.name = "Bob"
+	hero.str = 5
+	hero.dex = 5
+	hero.con = 5
 	+ Battle battle = null
 if hero.name == "Bob": Move Forward:  -> [1]
 Move Backward: -> [2]
 [1]
 	You move forward into the dark hallway.
+10.0s : Yikes! : -> Battle[Start] {
+    + Monster tempMonster = null
+    + Battle battle = null
+    tempMonster = new Monster()
+    tempMonster.name = "Joe"
+    battle = new Battle()
+    battle.text = "Seemingly from inside the walls, comes Joe, the phantom ooze monster!"
+	battle.rewards.exp = 50
+	battle.rewards.item/s += new SlimeItem()
+	battle.monster/s += tempMonster
+	battle.victory = new Victory()
+	battle.victory.message = "Finally, the hideous slime stops moving, and you are victorious."
+	battle.victory.state = |Start[3]|
+  }
 [2]
 	You move away from the direction you faced originally.
-	
+[3]
+	Woo!

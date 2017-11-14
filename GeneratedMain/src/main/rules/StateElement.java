@@ -51,20 +51,7 @@ public class StateElement extends ConcreteRule {
 						
 						new ChainParser(
 							new OptionalParser(
-									
-										new ChainParser(
-											GeneralTokens.IF,
-											Rules.boolean_statement,
-											
-											new ChoiceParser(
-												new ChainParser(
-													new ManyParser(
-															GeneralTokens.NEWLINE),
-													GeneralTokens.COLON,
-													new ManyParser(
-															StateTokens.NEWTLINE)),
-													new MultipleParser(
-															StateTokens.NEWTLINE)))),
+									Rules.description_condition),
 							new MultipleParser(
 									
 										new ChainParser(
@@ -79,23 +66,21 @@ public class StateElement extends ConcreteRule {
 						
 						new ChainParser(
 							new OptionalParser(
-									
-										new ChainParser(
-											GeneralTokens.IF,
-											Rules.boolean_statement,
-											
-											new ChoiceParser(
-												new ChainParser(
-													new ManyParser(
-															GeneralTokens.NEWLINE),
-													GeneralTokens.COLON,
-													new ManyParser(
-															StateTokens.NEWTLINE)),
-													new MultipleParser(
-															StateTokens.NEWTLINE)))),
+									Rules.choice_condition),
 							new ManyParser(
 									GeneralTokens.NEWLINE),
-							StateBraces.CHOICE_NAME,
+							
+							new ChoiceParser(
+									
+										new ChainParser(
+											new AddTokenParser(
+												GeneralTokens.FLOAT,"timedChoiceName"),
+											
+											new ChoiceParser(
+													StateTokens.SSS,
+													StateTokens.MS),
+											GeneralTokens.COLON),
+									StateBraces.CHOICE_NAME),
 							new ManyParser(
 									GeneralTokens.NEWLINE),
 							new OptionalParser(

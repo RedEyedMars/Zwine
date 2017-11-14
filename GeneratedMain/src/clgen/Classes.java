@@ -54,7 +54,7 @@ public void getReturnType(final IToken body_element,final Set<String> typeNames,
 }
 public void declaration(final IToken declaration)  {
 	final String newClassName = FlowController.camelize(declaration.get("className").toString());
-	final Long randomSerial = new Random("Hero".hashCode()).nextLong();
+	final Long randomSerial = new Random(newClassName.hashCode()).nextLong();
 	final String serialValue = randomSerial + "L";
 	final String finalLong = "final long";
 	

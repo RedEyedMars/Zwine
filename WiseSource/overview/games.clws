@@ -99,7 +99,13 @@ class 'packageName'."game" Game JPanel MouseListener KeyListener  MouseMotionLis
     lastTick = thisTick;
   }
   @void transition(State newState){
-    Game.currentState = newState;
+    if newState != Game.currentState {
+      Game.currentState = newState;
+      Game.currentState.display(handler);
+      Gui.refresh();
+    }
+  }
+  @void refresh(){
     Game.currentState.display(handler);
     Gui.refresh();
   }
